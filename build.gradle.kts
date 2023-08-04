@@ -20,6 +20,10 @@ intellij {
   plugins.set(listOf(/* Plugin Dependencies */))
 }
 
+dependencies {
+  implementation("org.eclipse.jgit:org.eclipse.jgit:6.6.0.202305301015-r")
+}
+
 tasks {
   // Set the JVM compatibility versions
   withType<JavaCompile> {
