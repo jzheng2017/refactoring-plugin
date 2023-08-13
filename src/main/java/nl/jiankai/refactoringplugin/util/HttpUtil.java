@@ -1,13 +1,14 @@
 package nl.jiankai.refactoringplugin.util;
 
+import com.intellij.openapi.diagnostic.Logger;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Logger;
 
 public class HttpUtil {
-    private static final Logger LOGGER = Logger.getLogger(HttpUtil.class.getName());
+    private static final Logger LOGGER = Logger.getInstance(HttpUtil.class);
 
     public static boolean validUrl(String url) {
         if (url.isBlank()) {
@@ -18,7 +19,7 @@ public class HttpUtil {
             new URL(url).toURI();
             return true;
         } catch (MalformedURLException | URISyntaxException e) {
-            LOGGER.warning("Invalid url: %s".formatted(url));
+            LOGGER.warn("Invalid url: %s".formatted(url));
             return false;
         }
     }

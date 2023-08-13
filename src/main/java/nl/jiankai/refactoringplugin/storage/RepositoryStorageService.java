@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import static nl.jiankai.refactoringplugin.git.GitUtil.validGitRepository;
 
+//TODO: prevent entities with duplicate IDs
 public abstract class RepositoryStorageService<T> implements EntityStorageService<RepositoryDetails>, Mappable<RepositoryDetails, T> {
     private StorageService<T> storageService;
     private List<StorageListener<RepositoryDetails>> listeners = new ArrayList<>();
@@ -14,11 +15,11 @@ public abstract class RepositoryStorageService<T> implements EntityStorageServic
         this.storageService = storageService;
     }
 
-    public void addStorageListener(StorageListener<RepositoryDetails> listener) {
+    public void addListener(StorageListener<RepositoryDetails> listener) {
         this.listeners.add(listener);
     }
 
-    public void removeStorageListener(StorageListener<RepositoryDetails> listener) {
+    public void removeListener(StorageListener<RepositoryDetails> listener) {
         this.listeners.remove(listener);
     }
 

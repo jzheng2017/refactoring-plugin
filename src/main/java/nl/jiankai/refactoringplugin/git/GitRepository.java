@@ -1,4 +1,6 @@
 package nl.jiankai.refactoringplugin.git;
 
-public interface GitRepository {
+import nl.jiankai.refactoringplugin.storage.Identifiable;
+
+public interface GitRepository extends Identifiable {
 }

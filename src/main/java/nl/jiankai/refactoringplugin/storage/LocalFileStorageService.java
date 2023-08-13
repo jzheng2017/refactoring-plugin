@@ -1,16 +1,17 @@
 package nl.jiankai.refactoringplugin.storage;
 
+import com.intellij.openapi.diagnostic.Logger;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public class LocalFileStorageService implements StorageService<String> {
-    private static final Logger LOGGER = Logger.getLogger(LocalFileStorageService.class.getName());
+    private static final Logger LOGGER = Logger.getInstance(LocalFileStorageService.class);
     public static final String SEPARATOR = "\n";
     private final String fileLocation;
     private final boolean createIfMissing;
@@ -26,7 +27,7 @@ public class LocalFileStorageService implements StorageService<String> {
             List<String> content = Files.readAllLines(Paths.get(fileLocation));
             return content.stream();
         } catch (IOException e) {
-            LOGGER.warning("Could not read the contents of '%s'".formatted(fileLocation));
+            LOGGER.warn("Could not read the contents of '%s'".formatted(fileLocation));
             return Stream.empty();
         }
     }
@@ -58,7 +59,7 @@ public class LocalFileStorageService implements StorageService<String> {
     private void write(String content, boolean append) {
         createFileIfMissing();
 
-        if (append) {
+        if (append && !fileIsEmpty()) {
             content = SEPARATOR + content;
         }
 
@@ -66,7 +67,7 @@ public class LocalFileStorageService implements StorageService<String> {
             outputStream.write(content.getBytes());
             LOGGER.info("Successfully written to '%s".formatted(fileLocation));
         } catch (IOException e) {
-            LOGGER.warning("Could not write the content to the file '%s'. Reason: %s".formatted(fileLocation, e.getMessage()));
+            LOGGER.warn("Could not write the content to the file '%s'. Reason: %s".formatted(fileLocation, e.getMessage()));
         }
     }
 
@@ -79,9 +80,23 @@ public class LocalFileStorageService implements StorageService<String> {
                         LOGGER.info("File created at location '%s'".formatted(fileLocation));
                     }
                 } catch (IOException e) {
-                    LOGGER.warning("Could not create file at location '%s'".formatted(fileLocation));
+                    LOGGER.warn("Could not create file at location '%s'".formatted(fileLocation));
                 }
             }
         }
+    }
+
+    private boolean fileIsEmpty() {
+        return new File(fileLocation).length() == 0;
+    }
+
+    @Override
+    public void addListener(StorageListener<String> listener) {
+
+    }
+
+    @Override
+    public void removeListener(StorageListener<String> listener) {
+
     }
 }

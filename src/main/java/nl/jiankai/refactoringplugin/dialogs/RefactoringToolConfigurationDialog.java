@@ -2,7 +2,9 @@ package nl.jiankai.refactoringplugin.dialogs;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBList;
+import nl.jiankai.refactoringplugin.storage.EntityStorageService;
 import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
+import nl.jiankai.refactoringplugin.storage.RepositoryStorageService;
 import nl.jiankai.refactoringplugin.storage.StorageService;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
 import nl.jiankai.refactoringplugin.tasks.TaskExecutorService;
@@ -21,9 +23,9 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class RefactoringToolConfigurationDialog extends DialogWrapper {
-    private StorageService<RepositoryDetails> storageService;
+    private EntityStorageService<RepositoryDetails> storageService;
 
-    public RefactoringToolConfigurationDialog(StorageService<RepositoryDetails> storageService) {
+    public RefactoringToolConfigurationDialog(EntityStorageService<RepositoryDetails> storageService) {
         super(true);
         this.storageService = storageService;
         setTitle("Configure Repositories");
@@ -102,9 +104,7 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
 
         removeButton.addActionListener(event -> {
             if (list.getSelectedIndex() >= 0 && !defaultListModel.isEmpty()) {
-                List<String> repos = new ArrayList<>(Arrays.stream((String[]) defaultListModel.toArray()).toList());
-                repos.remove(list.getSelectedValue());
-                storageService.write(getRepositoryDetails(repos));
+                storageService.remove(new RepositoryDetails(list.getSelectedValue()));
                 defaultListModel.remove(list.getSelectedIndex());
             }
         });
@@ -116,12 +116,5 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
         controlsPanel.add(repositoryInput, BorderLayout.NORTH);
         controlsPanel.add(addButton, BorderLayout.WEST);
         controlsPanel.add(removeButton, BorderLayout.EAST);
-    }
-
-    private List<RepositoryDetails> getRepositoryDetails(List<String> repo) {
-        return repo
-                .stream()
-                .map(RepositoryDetails::new)
-                .toList();
     }
 }

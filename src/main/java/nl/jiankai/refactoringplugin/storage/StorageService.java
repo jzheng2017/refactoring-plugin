@@ -3,7 +3,7 @@ package nl.jiankai.refactoringplugin.storage;
 import java.util.List;
 import java.util.stream.Stream;
 
-public interface StorageService<T> {
+public interface StorageService<T> extends StorageObservable<T> {
     /**
      * Reads the whole content containing type T and returns a stream of it
      * @return a stream of type T

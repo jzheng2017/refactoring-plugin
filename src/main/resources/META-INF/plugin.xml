@@ -25,8 +25,13 @@
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
-
   </extensions>
+
+    <projectListeners>
+        <listener
+                class="nl.jiankai.refactoringplugin.refactoring.RefactoringEventHandler"
+                topic="com.intellij.refactoring.listeners.RefactoringEventListener"/>
+    </projectListeners>
 
   <actions>
     <action id="RefactoringTool.ConfigureRepositories"

@@ -9,4 +9,12 @@ public final class PluginConfiguration {
     public String pluginAssetsBaseDirectory() {
         return pluginAssetsBaseDirectory;
     }
+
+    public String pluginRepositoryUrlsLocation() {
+        return pluginAssetsBaseDirectory + "/repositories.txt";
+    }
+
+    public String pluginGitRepositoryDirectory() {
+        return pluginAssetsBaseDirectory + "/repositories";
+    }
 }
