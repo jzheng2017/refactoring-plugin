@@ -26,8 +26,8 @@ public class ScheduledTask<T> extends Task<T> {
         this.recurring = recurring;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static <R> Builder<R> builder(Class<R> clazz) {
+        return new Builder<>();
     }
 
 
@@ -38,27 +38,27 @@ public class ScheduledTask<T> extends Task<T> {
         private int delay;
         private boolean recurring;
 
-        public Builder task(Callable<T> task) {
+        public Builder<T> task(Callable<T> task) {
             this.task = task;
             return this;
         }
 
-        public Builder period(int period) {
+        public Builder<T> period(int period) {
             this.period = period;
             return this;
         }
 
-        public Builder periodTimeUnit(TimeUnit periodTimeUnit) {
+        public Builder<T> periodTimeUnit(TimeUnit periodTimeUnit) {
             this.periodTimeUnit = periodTimeUnit;
             return this;
         }
 
-        public Builder delay(int delay) {
+        public Builder<T> delay(int delay) {
             this.delay = delay;
             return this;
         }
 
-        public Builder recurring() {
+        public Builder<T> recurring() {
             this.recurring = true;
             return this;
         }

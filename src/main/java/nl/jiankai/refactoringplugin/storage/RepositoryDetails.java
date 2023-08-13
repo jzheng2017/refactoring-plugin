@@ -11,7 +11,7 @@ public record RepositoryDetails(String url) implements Identifiable {
 
     @Override
     public String getId() {
-        return url;
+        return String.valueOf(hashCode());
     }
 
     @Override
@@ -24,6 +24,6 @@ public record RepositoryDetails(String url) implements Identifiable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return Objects.hash(url);
     }
 }

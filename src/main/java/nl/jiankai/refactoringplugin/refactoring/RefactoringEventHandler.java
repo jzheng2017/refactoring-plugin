@@ -3,6 +3,7 @@ package nl.jiankai.refactoringplugin.refactoring;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.refactoring.listeners.RefactoringEventData;
 import com.intellij.refactoring.listeners.RefactoringEventListener;
+import nl.jiankai.refactoringplugin.dialogs.RefactoringEventDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +12,7 @@ public class RefactoringEventHandler implements RefactoringEventListener {
     private static final Logger LOGGER = Logger.getInstance(RefactoringEventHandler.class);
     @Override
     public void refactoringStarted(@NotNull String refactoringId, @Nullable RefactoringEventData beforeData) {
+        new RefactoringEventDialog().show();
         LOGGER.info("Refactoring started: %s".formatted(refactoringId));
     }
 

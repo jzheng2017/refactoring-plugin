@@ -1,43 +1,64 @@
 package nl.jiankai.refactoringplugin.git;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
+import com.intellij.openapi.diagnostic.Logger;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTask;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Service
 public final class LocalFileGitRepositoryDiscovery implements GitRepositoryDiscovery {
-    private ScheduledTaskExecutorService<Stream<GitRepository>> executorService;
+    private static final Logger LOGGER = Logger.getInstance(LocalFileGitRepositoryDiscovery.class);
+    private ScheduledTaskExecutorService<Stream<GitRepository>> executorService = new ScheduledTaskExecutorService<>();
     private PluginConfiguration pluginConfiguration;
-    private List<GitRepositoryListener> listeners = new ArrayList<>();
+    private GitRepositoryFactory gitRepositoryFactory;
+
+    public LocalFileGitRepositoryDiscovery() {
+        pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
+        gitRepositoryFactory = new JGitRepositoryFactory();
+    }
 
     @Override
     public Stream<GitRepository> discover() {
-
         try {
-            return executorService.executeTask(new ScheduledTask<>(() -> this.scan(pluginConfiguration.pluginGitRepositoryDirectory()), 1, TimeUnit.SECONDS, 0, false)).get();
+            Class<Stream<GitRepository>> clazz = null;
+            return executorService.executeTask(
+                            ScheduledTask
+                                    .builder(clazz)
+                                    .task(() -> this.scan(pluginConfiguration.pluginGitRepositoryDirectory()))
+                                    .build())
+                    .get();
         } catch (InterruptedException | ExecutionException e) {
+            LOGGER.warn("Something went wrong while discovering git repositories", e);
             return Stream.empty();
         }
     }
 
-    @Override
-    public void addListener(GitRepositoryListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(GitRepositoryListener listener) {
-        listeners.remove(listener);
-    }
-
     private Stream<GitRepository> scan(String directory) {
-        return Stream.empty();
+        return getAllSubDirectories(directory)
+                .stream()
+                .filter(file -> file.isDirectory() && !file.getName().startsWith("."))
+                .map(dir -> gitRepositoryFactory.createRepository(dir.getAbsolutePath()));
+    }
+
+    private List<File> getAllSubDirectories(String directory) {
+        return Arrays
+                .stream(
+                        Objects.requireNonNull(new File(directory).listFiles(File::isDirectory))
+                ).toList();
     }
 }

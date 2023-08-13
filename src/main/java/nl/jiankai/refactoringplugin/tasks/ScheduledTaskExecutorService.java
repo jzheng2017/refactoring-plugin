@@ -1,7 +1,6 @@
 package nl.jiankai.refactoringplugin.tasks;
 
 import com.intellij.openapi.diagnostic.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -31,7 +30,7 @@ public class ScheduledTaskExecutorService<T> implements TaskExecutorService<Sche
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            }, task.period(), task.delay(), TimeUnit.SECONDS);
+            }, task.delay(), task.period(), TimeUnit.SECONDS);
         } else {
             throw new IllegalArgumentException("A non recurring task was provided to a recurring task call");
         }
