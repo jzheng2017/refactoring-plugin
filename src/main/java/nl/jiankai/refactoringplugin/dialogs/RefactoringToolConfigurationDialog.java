@@ -4,6 +4,8 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBList;
 import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
 import nl.jiankai.refactoringplugin.storage.StorageService;
+import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
+import nl.jiankai.refactoringplugin.tasks.TaskExecutorService;
 import nl.jiankai.refactoringplugin.util.HttpUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +18,7 @@ import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class RefactoringToolConfigurationDialog extends DialogWrapper {
     private StorageService<RepositoryDetails> storageService;
@@ -33,7 +36,7 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
         JPanel controlsPanel = new JPanel();
         JButton addButton = new JButton("Add repository");
         JTextField repositoryInput = new JTextField("Enter link...");
-        addButton.setEnabled(false);
+//        addButton.setEnabled(false);
         JButton removeButton = new JButton("Remove repository");
         DefaultListModel<String> defaultListModel = new DefaultListModel<>();
         JList<String> list = new JBList<>(defaultListModel);
@@ -65,36 +68,37 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
             }
         });
 
-        repositoryInput.getDocument().addDocumentListener(new DocumentListener() {
-            private Instant lastChange = Instant.now();
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                validateIfNeeded();
-            }
-
-            private void validateIfNeeded() {
-                final boolean isHalfSecondAfterLastInputChange = Instant.now().isAfter(lastChange.plusMillis(500));
-                lastChange = Instant.now();
-                if (isHalfSecondAfterLastInputChange) {
-                    disableAddButtonIfInvalidUrl();
-                }
-
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                validateIfNeeded();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                validateIfNeeded();
-            }
-
-            private void disableAddButtonIfInvalidUrl() {
-                addButton.setEnabled(HttpUtil.validUrl(repositoryInput.getText()));
-            }
-        });
+//        repositoryInput.getDocument().addDocumentListener(new DocumentListener() {
+//            private Instant lastChange = Instant.now();
+//            private TaskExecutorService executorService = new ScheduledTaskExecutorService();
+//            @Override
+//            public void insertUpdate(DocumentEvent e) {
+//                validateIfNeeded();
+//            }
+//
+//            private void validateIfNeeded() {
+//                final boolean isHalfSecondAfterLastInputChange = Instant.now().isAfter(lastChange.plusMillis(500));
+//                lastChange = Instant.now();
+//                if (isHalfSecondAfterLastInputChange) {
+//                    disableAddButtonIfInvalidUrl();
+//                }
+//
+//            }
+//
+//            @Override
+//            public void removeUpdate(DocumentEvent e) {
+//                validateIfNeeded();
+//            }
+//
+//            @Override
+//            public void changedUpdate(DocumentEvent e) {
+//                validateIfNeeded();
+//            }
+//
+//            private void disableAddButtonIfInvalidUrl() {
+//                addButton.setEnabled(HttpUtil.validUrl(repositoryInput.getText()));
+//            }
+//        });
 
         removeButton.addActionListener(event -> {
             if (list.getSelectedIndex() >= 0 && !defaultListModel.isEmpty()) {
@@ -117,7 +121,7 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
     private List<RepositoryDetails> getRepositoryDetails(List<String> repo) {
         return repo
                 .stream()
-                .map(repository -> new RepositoryDetails((String) repository))
+                .map(RepositoryDetails::new)
                 .toList();
     }
 }
