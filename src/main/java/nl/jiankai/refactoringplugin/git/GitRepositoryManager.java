@@ -4,10 +4,14 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
+import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
 import nl.jiankai.refactoringplugin.storage.StorageListener;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTask;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.InvocationRequest;
 
 import java.io.File;
 import java.util.HashMap;
@@ -21,9 +25,11 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
     private PluginConfiguration pluginConfiguration;
     private ScheduledTaskExecutorService<Void> executorService = new ScheduledTaskExecutorService<>();
     private GitRepositoryDiscovery gitRepositoryDiscovery = new LocalFileGitRepositoryDiscovery();
-
+    private ProjectDependencyResolver projectDependencyResolver;
     public GitRepositoryManager() {
         pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
+        projectDependencyResolver = ApplicationManager.getApplication().getService(MavenProjectDependencyResolver.class);
+
         discoverGitRepositories();
         submitGitRepositoryDiscoveryTask();
     }
@@ -47,17 +53,23 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
         try {
             gitRepositoryDiscovery
                     .discover()
+                    .parallel()
                     .forEach(gitRepository -> {
                         String gitRepositoryId = gitRepository.getId();
 
                         if (!gitRepositories.containsKey(gitRepositoryId)) {
                             LOGGER.info("Discovered new git repository: '%s'".formatted(gitRepositoryId));
                             gitRepositories.put(gitRepositoryId, gitRepository);
+                            downloadProjectDependencies(gitRepository);
                         }
                     });
         } catch (Exception e) {
             LOGGER.info("Something went wrong while discovering git repositories: %s".formatted(e.getMessage()), e);
         }
+    }
+
+    private void downloadProjectDependencies(GitRepository gitRepository) {
+         projectDependencyResolver.install(new File(gitRepository.getLocalPath()));
     }
 
     @Override

@@ -25,6 +25,9 @@ dependencies {
   implementation("org.slf4j:slf4j-api:2.0.7")
   implementation("com.github.javaparser:javaparser-core:3.25.4")
   implementation("com.github.javaparser:javaparser-symbol-solver-core:3.25.4")
+  implementation("org.apache.maven:maven-model:4.0.0-alpha-7")
+  implementation("org.apache.maven.shared:maven-invoker:3.2.0")
+  implementation("commons-io:commons-io:2.13.0")
 
 }
 
