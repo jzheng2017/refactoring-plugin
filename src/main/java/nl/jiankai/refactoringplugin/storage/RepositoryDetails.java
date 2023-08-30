@@ -1,17 +1,48 @@
 package nl.jiankai.refactoringplugin.storage;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-public record RepositoryDetails(String url) implements Identifiable {
+public class RepositoryDetails implements Identifiable {
+    private final String url;
+    private String urlPath;
+
+    public RepositoryDetails(String url) {
+        this.url = url;
+        try {
+            this.urlPath = Arrays
+                    .stream(
+                            new URL(url)
+                                    .getPath()
+                                    .split("/")
+                    )
+                    .filter(Predicate.not(String::isBlank))
+                    .collect(Collectors.joining("-"));
+        } catch (MalformedURLException e) {
+            this.urlPath = "";
+        }
+    }
 
     @Override
     public String toString() {
         return url;
     }
 
+    public String url() {
+        return url;
+    }
+
+    public String urlPath() {
+        return urlPath;
+    }
+
     @Override
     public String getId() {
-        return String.valueOf(hashCode());
+        return urlPath;
     }
 
     @Override

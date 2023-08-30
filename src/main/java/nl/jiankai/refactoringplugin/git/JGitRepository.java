@@ -12,4 +12,9 @@ public class JGitRepository implements GitRepository{
     public String getId() {
         return git.getRepository().getDirectory().getName();
     }
+
+    @Override
+    public String getLocalPath() {
+        return git.getRepository().getDirectory().getAbsolutePath();
+    }
 }

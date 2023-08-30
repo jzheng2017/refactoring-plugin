@@ -25,23 +25,14 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
     public GitRepositoryManager() {
         pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
         discoverGitRepositories();
+        submitGitRepositoryDiscoveryTask();
     }
 
-    private void discoverGitRepositories() {
+    private void submitGitRepositoryDiscoveryTask() {
         executorService.executeRecurringTask(
                 ScheduledTask.builder(Void.class)
                         .task(() -> {
-                            LOGGER.info("Discovering git repositories...");
-                            gitRepositoryDiscovery
-                                    .discover()
-                                    .forEach(gitRepository -> {
-                                        String gitRepositoryId = gitRepository.getId();
-
-                                        if (!gitRepositories.containsKey(gitRepositoryId)) {
-                                            LOGGER.info("Discovered new git repository: '%s'".formatted(gitRepositoryId));
-                                            gitRepositories.put(gitRepositoryId, gitRepository);
-                                        }
-                                    });
+                            discoverGitRepositories();
                             return null;
                         })
                         .period(10)
@@ -49,8 +40,24 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
                         .recurring()
                         .build()
         );
+    }
 
+    private void discoverGitRepositories() {
+        LOGGER.info("Discovering git repositories...");
+        try {
+            gitRepositoryDiscovery
+                    .discover()
+                    .forEach(gitRepository -> {
+                        String gitRepositoryId = gitRepository.getId();
 
+                        if (!gitRepositories.containsKey(gitRepositoryId)) {
+                            LOGGER.info("Discovered new git repository: '%s'".formatted(gitRepositoryId));
+                            gitRepositories.put(gitRepositoryId, gitRepository);
+                        }
+                    });
+        } catch (Exception e) {
+            LOGGER.info("Something went wrong while discovering git repositories: %s".formatted(e.getMessage()), e);
+        }
     }
 
     @Override
@@ -75,6 +82,6 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
     }
 
     public Map<String, GitRepository> gitRepositories() {
-        return gitRepositories;
+        return Map.copyOf(gitRepositories);
     }
 }

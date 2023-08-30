@@ -2,13 +2,15 @@ package nl.jiankai.refactoringplugin.dialogs;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBList;
+import nl.jiankai.refactoringplugin.refactoring.ProjectImpactInfo;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Collection;
 
 public class RefactoringEventDialog extends DialogWrapper {
 
-    public RefactoringEventDialog() {
+    public RefactoringEventDialog(Collection<ProjectImpactInfo> impacts) {
         super(true);
         setTitle("Code Affected by Refactoring Action");
         setSize(500, 300);

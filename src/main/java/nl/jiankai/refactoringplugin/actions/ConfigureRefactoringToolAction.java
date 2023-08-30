@@ -10,7 +10,6 @@ import nl.jiankai.refactoringplugin.storage.EntityStorageService;
 import nl.jiankai.refactoringplugin.storage.FileRepositoryStorageService;
 import nl.jiankai.refactoringplugin.storage.LocalFileStorageService;
 import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
-import org.eclipse.jgit.lib.Repository;
 import org.jetbrains.annotations.NotNull;
 
 public class ConfigureRefactoringToolAction extends AnAction {

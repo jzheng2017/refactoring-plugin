@@ -35,10 +35,9 @@ public final class LocalFileGitRepositoryDiscovery implements GitRepositoryDisco
     @Override
     public Stream<GitRepository> discover() {
         try {
-            Class<Stream<GitRepository>> clazz = null;
             return executorService.executeTask(
                             ScheduledTask
-                                    .builder(clazz)
+                                    .builder((Class<Stream<GitRepository>>)null)
                                     .task(() -> this.scan(pluginConfiguration.pluginGitRepositoryDirectory()))
                                     .build())
                     .get();
