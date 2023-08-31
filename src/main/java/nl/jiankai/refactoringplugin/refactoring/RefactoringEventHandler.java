@@ -1,6 +1,7 @@
 package nl.jiankai.refactoringplugin.refactoring;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Key;
 import com.intellij.refactoring.listeners.RefactoringEventData;
 import com.intellij.refactoring.listeners.RefactoringEventListener;
 import nl.jiankai.refactoringplugin.dialogs.RefactoringEventDialog;
@@ -15,7 +16,7 @@ public class RefactoringEventHandler implements RefactoringEventListener {
     private RefactoringImpactAssessor refactoringImpactAssessor = new JavaParserRefactoringImpactAssessor();
     @Override
     public void refactoringStarted(@NotNull String refactoringId, @Nullable RefactoringEventData beforeData) {
-        Collection<ProjectImpactInfo> impacts = refactoringImpactAssessor.assesImpact(toRefactoringData(beforeData));
+        ProjectImpactInfo impacts = refactoringImpactAssessor.assesImpact(toRefactoringData(beforeData));
         new RefactoringEventDialog(impacts).show();
         LOGGER.info("Refactoring started: %s".formatted(refactoringId));
     }

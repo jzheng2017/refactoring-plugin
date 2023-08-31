@@ -2,7 +2,13 @@ package nl.jiankai.refactoringplugin.refactoring.javaparser;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
@@ -17,11 +23,8 @@ import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyR
 import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.git.GitRepositoryManager;
 import nl.jiankai.refactoringplugin.refactoring.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.*;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -41,19 +44,46 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
     }
 
     @Override
-    public Collection<ProjectImpactInfo> assesImpact(RefactoringData refactoringData) {
-        Map<Project, Collection<CompilationUnit>> test = getAllProjects();
+    public ProjectImpactInfo assesImpact(RefactoringData refactoringData) {
+        Map<Project, Collection<CompilationUnit>> projects = getAllProjects();
 
-        List<RefactoringImpact> r =  test.values().stream().flatMap(col -> col.stream().flatMap(cu -> collectRefactoringImpact(cu).stream())).toList();
-        return null;
+        return new ProjectImpactInfo(projects
+                .entrySet()
+                .stream()
+                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().stream().flatMap(cu -> collectRefactoringImpact(cu, refactoringData).stream()).toList())));
     }
 
-    private Collection<RefactoringImpact> collectRefactoringImpact(CompilationUnit compilationUnit) {
+    private Collection<RefactoringImpact> collectRefactoringImpact(CompilationUnit compilationUnit, RefactoringData refactoringData) {
         return JavaParserUtil
-                .getMethodUsages(compilationUnit, "nl.jiankai.mapper.strategies.FieldNamingStrategy.transform(java.lang.String)")
+                .getMethodUsages(compilationUnit, "org.apache.commons.text.WordUtils.capitalize(java.lang.String)")
                 .stream()
-                .map(method -> new RefactoringImpact(method.getScope().toString(), method.getNameAsString(), null))
+                .map(method -> {
+                    Range range = method.getRange().orElse(Range.range(0,0,0,0));
+                    return new RefactoringImpact(getPackageName(method), getClassName(method), method.getNameAsString(), new RefactoringImpact.Position(range.begin.column, range.end.column, range.begin.line, range.end.line));
+                })
                 .toList();
+    }
+
+    private String getPackageName(Node node) {
+        while (node.hasParentNode()) {
+            node = node.getParentNode().get();
+            if (node instanceof CompilationUnit cu) {
+                return cu.getPackageDeclaration().map(NodeWithName::getNameAsString).orElse("");
+            }
+        }
+
+        return "";
+    }
+
+    private String getClassName(Node node) {
+        while (node.hasParentNode()) {
+            node = node.getParentNode().get();
+            if (node instanceof ClassOrInterfaceDeclaration coid) {
+                return coid.getNameAsString();
+            }
+        }
+
+        return "";
     }
 
     private Map<Project, Collection<CompilationUnit>> getAllProjects() {
@@ -70,11 +100,11 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
         try {
             CombinedTypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
 
-            for (File sourceDir: allSourceDirectories) {
+            for (File sourceDir : allSourceDirectories) {
                 typeSolver.add(new JavaParserTypeSolver(sourceDir.getAbsolutePath()));
             }
 
-            for (File jar: jarLocations) {
+            for (File jar : jarLocations) {
                 typeSolver.add(new JarTypeSolver(jar.getAbsolutePath()));
             }
 
