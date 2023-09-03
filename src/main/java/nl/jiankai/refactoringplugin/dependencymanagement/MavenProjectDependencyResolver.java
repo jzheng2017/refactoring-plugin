@@ -50,10 +50,24 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
 
         List<File> foundJars = findJarsRecursive(repositoryLocation, fileNames).toList();
         if (foundJars.size() != dependencies.size()) {
+            List<String> jarsNotFound = getMissingJars(fileNames, foundJars.stream().map(File::getName).collect(Collectors.toSet()));
             LOGGER.warn("Not all jars were found. '%s' jars were found of the '%s' dependencies".formatted(foundJars.size(), dependencies.size()));
+            LOGGER.warn("The following jars are missing: %s".formatted(jarsNotFound));
         }
 
         return foundJars;
+    }
+
+    private List<String> getMissingJars(Set<String> fileNames, Set<String> foundJars) {
+        List<String> missingJars = new ArrayList<>();
+
+        for (String fileName: fileNames) {
+            if (!foundJars.contains(fileName)) {
+                missingJars.add(fileName);
+            }
+        }
+
+        return missingJars;
     }
 
     private Stream<File> findJarsRecursive(File directory, Set<String> fileNames) {

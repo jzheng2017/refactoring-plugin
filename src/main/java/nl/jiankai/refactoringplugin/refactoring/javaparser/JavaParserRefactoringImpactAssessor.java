@@ -55,7 +55,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
 
     private Collection<RefactoringImpact> collectRefactoringImpact(CompilationUnit compilationUnit, RefactoringData refactoringData) {
         return JavaParserUtil
-                .getMethodUsages(compilationUnit, "org.apache.commons.text.WordUtils.capitalize(java.lang.String)")
+                .getMethodUsages(compilationUnit, refactoringData.fullyQualifiedSignature())
                 .stream()
                 .map(method -> {
                     Range range = method.getRange().orElse(Range.range(0,0,0,0));
