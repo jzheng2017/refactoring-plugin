@@ -5,9 +5,7 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
@@ -59,7 +57,15 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
                 .stream()
                 .map(method -> {
                     Range range = method.getRange().orElse(Range.range(0,0,0,0));
-                    return new RefactoringImpact(getPackageName(method), getClassName(method), method.getNameAsString(), new RefactoringImpact.Position(range.begin.column, range.end.column, range.begin.line, range.end.line));
+                    String filePath = "";
+                    String fileName = "";
+                    if (compilationUnit.getStorage().isPresent()) {
+                        CompilationUnit.Storage storage = compilationUnit.getStorage().get();
+                        filePath = storage.getPath().toAbsolutePath().toString();
+                        fileName = storage.getFileName();
+                    }
+
+                    return new RefactoringImpact(filePath, fileName, getPackageName(method), getClassName(method), method.getNameAsString(), new RefactoringImpact.Position(range.begin.column, range.end.column, range.begin.line, range.end.line), false);
                 })
                 .toList();
     }

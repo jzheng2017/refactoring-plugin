@@ -79,7 +79,7 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
         if (gitRepositories.containsKey(repositoryDetails.getId())) {
             LOGGER.warn("Repository '%s' not added as it already exists".formatted(repositoryDetails.getId()));
         } else {
-            gitRepositories.put(repositoryDetails.getId(), GitUtil.clone(repositoryDetails.url(), new File(pluginConfiguration.pluginGitRepositoryDirectory() + "/" + repositoryDetails.getId())));
+            gitRepositories.put(repositoryDetails.getId(), GitUtil.clone(repositoryDetails.url(), new File(pluginConfiguration.pluginGitRepositoryDirectory() + File.separator + repositoryDetails.getId())));
         }
     }
 

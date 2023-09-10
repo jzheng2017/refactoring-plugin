@@ -16,16 +16,17 @@ import org.jetbrains.annotations.Nullable;
 public class RefactoringEventHandler implements RefactoringEventListener {
     private static final Logger LOGGER = Logger.getInstance(RefactoringEventHandler.class);
     private RefactoringImpactAssessor refactoringImpactAssessor = new JavaParserRefactoringImpactAssessor();
-
+    private RefactoringData beforeRefactoringData;
     @Override
     public void refactoringStarted(@NotNull String refactoringId, @Nullable RefactoringEventData beforeData) {
-        ProjectImpactInfo impacts = refactoringImpactAssessor.assesImpact(toRefactoringData(refactoringId, beforeData));
-        new RefactoringEventDialog(impacts).show();
+        beforeRefactoringData = toRefactoringData(refactoringId, beforeData);
         LOGGER.info("Refactoring started: %s".formatted(refactoringId));
     }
 
     @Override
     public void refactoringDone(@NotNull String refactoringId, @Nullable RefactoringEventData afterData) {
+        ProjectImpactInfo impacts = refactoringImpactAssessor.assesImpact(beforeRefactoringData);
+        new RefactoringEventDialog(impacts).show();
         LOGGER.info("Refactoring done: %s".formatted(refactoringId));
     }
 

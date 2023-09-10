@@ -1,6 +1,15 @@
 package nl.jiankai.refactoringplugin.dialogs;
 
+import com.intellij.ide.DataManager;
+import com.intellij.ide.highlighter.JavaFileType;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.JBList;
 import nl.jiankai.refactoringplugin.refactoring.Project;
 import nl.jiankai.refactoringplugin.refactoring.ProjectImpactInfo;
@@ -8,17 +17,24 @@ import nl.jiankai.refactoringplugin.refactoring.RefactoringImpact;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Collection;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class RefactoringEventDialog extends DialogWrapper {
     private final ProjectImpactInfo impactInfo;
+
     public RefactoringEventDialog(ProjectImpactInfo impactInfo) {
         super(true);
         this.impactInfo = impactInfo;
         setTitle("Code Affected by Refactoring Action");
-        setSize(500, 300);
+        setSize(1000, 1000);
         init();
     }
 
@@ -26,15 +42,42 @@ public class RefactoringEventDialog extends DialogWrapper {
     protected @Nullable JComponent createCenterPanel() {
         JPanel dialogPanel = new JPanel();
 
-        DefaultListModel<String> defaultListModel = new DefaultListModel<>();
-        JList<String> list = new JBList<>(defaultListModel);
-        for (Map.Entry<Project, List<RefactoringImpact>> projectImpact: impactInfo.refactoringImpacts().entrySet()) {
-            defaultListModel.addElement("--- %s ---".formatted(projectImpact.getKey().toString()));
-            for (RefactoringImpact refactoringImpact: projectImpact.getValue()) {
-                defaultListModel.addElement("package: %s | class: %s | line %s position %s".formatted(refactoringImpact.packageLocation(), refactoringImpact.className(), refactoringImpact.position().rowStart(), refactoringImpact.position().columnStart()));
+        DefaultListModel<RefactoringImpact> defaultListModel = new DefaultListModel<>();
+        JList<RefactoringImpact> list = new JBList<>(defaultListModel);
+        for (Map.Entry<Project, List<RefactoringImpact>> projectImpact : impactInfo.refactoringImpacts().entrySet()) {
+            for (RefactoringImpact refactoringImpact : projectImpact.getValue()) {
+                defaultListModel.addElement(refactoringImpact);
             }
         }
-        dialogPanel.add(list);
+        list.setSize(800, 300);
+        new EditorTextField();
+        EditorTextField editorTextField;
+        try {
+            com.intellij.openapi.project.Project project = DataManager.getInstance().getDataContextFromFocusAsync().blockingGet(1).getData(CommonDataKeys.PROJECT);
+            editorTextField = new EditorTextField(project, JavaFileType.INSTANCE);
+        } catch (TimeoutException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        editorTextField.setSize(1000, 700);
+        editorTextField.setVisible(false);
+        editorTextField.setOneLineMode(false);
+        editorTextField.setViewer(true);
+        editorTextField.setFileType(JavaFileType.INSTANCE);
+        dialogPanel.add(editorTextField);
+
+        dialogPanel.add(list, BorderLayout.PAGE_START);
+        EditorTextField finalEditorTextField = editorTextField;
+        list.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        RefactoringImpact refactoringImpact = list.getSelectedValue();
+                        VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Path.of(refactoringImpact.filePath()));
+                        finalEditorTextField.setDocument(FileDocumentManager.getInstance().getDocument(virtualFile));
+                        finalEditorTextField.setVisible(true);
+                    }
+                }
+        );
         return dialogPanel;
     }
 }
