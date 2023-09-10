@@ -34,6 +34,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
     private GitRepositoryManager gitRepositoryManager;
     private PluginConfiguration pluginConfiguration;
     private ProjectDependencyResolver projectDependencyResolver;
+    private Set<RefactoringType> supportedRefactoringTypes = Set.of(RefactoringType.METHOD_PARAMETER_TYPE, RefactoringType.METHOD_NAME);
 
     public JavaParserRefactoringImpactAssessor() {
         pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
@@ -43,6 +44,10 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
 
     @Override
     public ProjectImpactInfo assesImpact(RefactoringData refactoringData) {
+        if (!supportedRefactoringTypes.contains(refactoringData.refactoringType())) {
+            throw new UnsupportedOperationException("Assessing impact for refactoring type '%s' is not supported yet".formatted(refactoringData.refactoringType()));
+        }
+
         Map<Project, Collection<CompilationUnit>> projects = getAllProjects();
 
         return new ProjectImpactInfo(projects

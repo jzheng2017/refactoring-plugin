@@ -37,7 +37,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
                     .map(dependency -> new Dependency(dependency.getGroupId(), dependency.getArtifactId(), resolveProperty(properties, dependency.getVersion())))
                     .toList();
         } catch (FileNotFoundException | IOException | XmlPullParserException e) {
-            LOGGER.warn("Could not resolve project dependencies for project path '%s'".formatted(projectRootPath));
+            LOGGER.warn("Could not resolve project dependencies for project path '%s'".formatted(projectRootPath), e);
             return new ArrayList<>();
         }
     }
@@ -107,7 +107,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
             return foundFiles[0];
         }
 
-        throw new FileNotFoundException();
+        throw new FileNotFoundException("Could not find file '%s'".formatted(directory.getName()));
     }
 
     private String resolveProperty(Map<String, String> properties, String property) {
@@ -137,5 +137,8 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
     }
 
     private static class FileNotFoundException extends RuntimeException {
+        public FileNotFoundException(String errorMessage) {
+            super(errorMessage);
+        }
     }
 }

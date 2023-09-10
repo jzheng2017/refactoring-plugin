@@ -17,6 +17,7 @@ public class RefactoringEventHandler implements RefactoringEventListener {
     private static final Logger LOGGER = Logger.getInstance(RefactoringEventHandler.class);
     private RefactoringImpactAssessor refactoringImpactAssessor = new JavaParserRefactoringImpactAssessor();
     private RefactoringData beforeRefactoringData;
+
     @Override
     public void refactoringStarted(@NotNull String refactoringId, @Nullable RefactoringEventData beforeData) {
         beforeRefactoringData = toRefactoringData(refactoringId, beforeData);
@@ -76,6 +77,10 @@ public class RefactoringEventHandler implements RefactoringEventListener {
     }
 
     private RefactoringType getRefactoringType(String refactoringId) {
-        return RefactoringType.METHOD_NAME;
+        return switch (refactoringId) {
+            case "refactoring.inplace.rename" -> RefactoringType.METHOD_NAME;
+            case "refactoring.changeSignature" -> RefactoringType.METHOD_PARAMETER_TYPE;
+            default -> RefactoringType.UNKNOWN;
+        };
     }
 }

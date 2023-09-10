@@ -64,7 +64,7 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
                         }
                     });
         } catch (Exception e) {
-            LOGGER.info("Something went wrong while discovering git repositories: %s".formatted(e.getMessage()), e);
+            LOGGER.warn("Something went wrong while discovering git repositories: %s".formatted(e.getMessage()), e);
         }
     }
 

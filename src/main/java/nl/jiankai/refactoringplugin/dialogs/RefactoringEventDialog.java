@@ -3,6 +3,8 @@ package nl.jiankai.refactoringplugin.dialogs;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -73,11 +75,21 @@ public class RefactoringEventDialog extends DialogWrapper {
                     public void mouseClicked(MouseEvent e) {
                         RefactoringImpact refactoringImpact = list.getSelectedValue();
                         VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Path.of(refactoringImpact.filePath()));
-                        finalEditorTextField.setDocument(FileDocumentManager.getInstance().getDocument(virtualFile));
+                        Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+                        finalEditorTextField.setDocument(document);
+                        Position elementPosition = computeElementPosition(refactoringImpact.position(), document);
+                        finalEditorTextField.getEditor().getSelectionModel().setSelection(elementPosition.startOffset, elementPosition.endOffset);
                         finalEditorTextField.setVisible(true);
                     }
                 }
         );
         return dialogPanel;
+    }
+
+    private Position computeElementPosition(RefactoringImpact.Position position, Document document) {
+        return new Position(document.getLineStartOffset(Math.max(0, position.rowStart() - 1)), document.getLineEndOffset(Math.max(0, position.rowEnd())));
+    }
+
+    private record Position(int startOffset, int endOffset) {
     }
 }

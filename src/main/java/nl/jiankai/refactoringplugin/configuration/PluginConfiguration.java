@@ -4,7 +4,7 @@ import com.intellij.openapi.components.Service;
 
 @Service
 public final class PluginConfiguration {
-    private final String pluginAssetsBaseDirectory = "/home/jiankai/Documents/ref-plugin";
+    private final String pluginAssetsBaseDirectory = "/Users/Jiankai/ref-plugin";
 
     public String pluginAssetsBaseDirectory() {
         return pluginAssetsBaseDirectory;
