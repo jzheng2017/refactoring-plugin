@@ -2,10 +2,12 @@ package nl.jiankai.refactoringplugin.git;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
-import com.intellij.openapi.diagnostic.Logger;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTask;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +24,7 @@ import java.util.stream.Stream;
 
 @Service
 public final class LocalFileGitRepositoryDiscovery implements GitRepositoryDiscovery {
-    private static final Logger LOGGER = Logger.getInstance(LocalFileGitRepositoryDiscovery.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileGitRepositoryDiscovery.class);
     private ScheduledTaskExecutorService<Stream<GitRepository>> executorService = new ScheduledTaskExecutorService<>();
     private PluginConfiguration pluginConfiguration;
     private GitRepositoryFactory gitRepositoryFactory;

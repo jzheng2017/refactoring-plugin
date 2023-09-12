@@ -1,6 +1,5 @@
 package nl.jiankai.refactoringplugin.refactoring;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
@@ -8,13 +7,16 @@ import com.intellij.psi.util.ClassUtil;
 import com.intellij.refactoring.listeners.RefactoringEventData;
 import com.intellij.refactoring.listeners.RefactoringEventListener;
 import com.intellij.util.keyFMap.KeyFMap;
+import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.dialogs.RefactoringEventDialog;
 import nl.jiankai.refactoringplugin.refactoring.javaparser.JavaParserRefactoringImpactAssessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RefactoringEventHandler implements RefactoringEventListener {
-    private static final Logger LOGGER = Logger.getInstance(RefactoringEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RefactoringEventHandler.class);
     private RefactoringImpactAssessor refactoringImpactAssessor = new JavaParserRefactoringImpactAssessor();
     private RefactoringData beforeRefactoringData;
 

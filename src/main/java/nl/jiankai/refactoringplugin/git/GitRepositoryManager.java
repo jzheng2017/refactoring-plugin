@@ -2,7 +2,6 @@ package nl.jiankai.refactoringplugin.git;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
-import com.intellij.openapi.diagnostic.Logger;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
 import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
@@ -12,6 +11,8 @@ import nl.jiankai.refactoringplugin.tasks.ScheduledTask;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.InvocationRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public final class GitRepositoryManager implements StorageListener<RepositoryDetails> {
-    private static final Logger LOGGER = Logger.getInstance(GitRepositoryManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitRepositoryManager.class);
     private Map<String, GitRepository> gitRepositories = new HashMap<>();
     private PluginConfiguration pluginConfiguration;
     private ScheduledTaskExecutorService<Void> executorService = new ScheduledTaskExecutorService<>();
@@ -49,7 +50,7 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
     }
 
     private void discoverGitRepositories() {
-        LOGGER.info("Discovering git repositories...");
+        LOGGER.trace("Discovering git repositories...");
         try {
             gitRepositoryDiscovery
                     .discover()
@@ -58,13 +59,13 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
                         String gitRepositoryId = gitRepository.getId();
 
                         if (!gitRepositories.containsKey(gitRepositoryId)) {
-                            LOGGER.info("Discovered new git repository: '%s'".formatted(gitRepositoryId));
+                            LOGGER.info("Discovered new git repository: '{}'", gitRepositoryId);
                             gitRepositories.put(gitRepositoryId, gitRepository);
                             downloadProjectDependencies(gitRepository);
                         }
                     });
         } catch (Exception e) {
-            LOGGER.warn("Something went wrong while discovering git repositories: %s".formatted(e.getMessage()), e);
+            LOGGER.warn("Something went wrong while discovering git repositories: {}", e.getMessage(), e);
         }
     }
 
@@ -77,7 +78,7 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
         RepositoryDetails repositoryDetails = event.affected();
 
         if (gitRepositories.containsKey(repositoryDetails.getId())) {
-            LOGGER.warn("Repository '%s' not added as it already exists".formatted(repositoryDetails.getId()));
+            LOGGER.warn("Repository '{}' not added as it already exists", repositoryDetails.getId());
         } else {
             gitRepositories.put(repositoryDetails.getId(), GitUtil.clone(repositoryDetails.url(), new File(pluginConfiguration.pluginGitRepositoryDirectory() + File.separator + repositoryDetails.getId())));
         }

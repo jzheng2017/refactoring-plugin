@@ -15,12 +15,13 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
 import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.git.GitRepositoryManager;
 import nl.jiankai.refactoringplugin.refactoring.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toMap;
 
 public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAssessor {
-    private Logger LOGGER = Logger.getInstance(JavaParserRefactoringImpactAssessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaParserRefactoringImpactAssessor.class);
     private GitRepositoryManager gitRepositoryManager;
     private PluginConfiguration pluginConfiguration;
     private ProjectDependencyResolver projectDependencyResolver;
@@ -136,7 +137,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
                     .map(parseResult -> parseResult.getResult().get())
                     .toList();
         } catch (Exception ex) {
-            LOGGER.warn(ex);
+            LOGGER.warn("Parsing project '{}' went wrong. Reason: {}", path, ex.getMessage(), ex);
         }
 
         return new ArrayList<>();

@@ -22,6 +22,7 @@ intellij {
 dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:6.6.0.202305301015-r")
   implementation("org.slf4j:slf4j-api:2.0.7")
+  implementation("org.slf4j:slf4j-simple:2.0.9")
   implementation("com.github.javaparser:javaparser-core:3.25.4")
   implementation("com.github.javaparser:javaparser-symbol-solver-core:3.25.4")
   implementation("org.apache.maven:maven-model:4.0.0-alpha-7")

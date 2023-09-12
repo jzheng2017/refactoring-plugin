@@ -1,6 +1,8 @@
 package nl.jiankai.refactoringplugin.storage;
 
-import com.intellij.openapi.diagnostic.Logger;
+import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,7 +13,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class LocalFileStorageService implements StorageService<String> {
-    private static final Logger LOGGER = Logger.getInstance(LocalFileStorageService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileStorageService.class);
     public static final String SEPARATOR = "\n";
     private final String fileLocation;
     private final boolean createIfMissing;
@@ -27,7 +29,7 @@ public class LocalFileStorageService implements StorageService<String> {
             List<String> content = Files.readAllLines(Paths.get(fileLocation));
             return content.stream();
         } catch (IOException e) {
-            LOGGER.warn("Could not read the contents of '%s'".formatted(fileLocation));
+            LOGGER.warn("Could not read the contents of '{}'", fileLocation);
             return Stream.empty();
         }
     }
@@ -65,9 +67,9 @@ public class LocalFileStorageService implements StorageService<String> {
 
         try (FileOutputStream outputStream = new FileOutputStream(fileLocation, append)) {
             outputStream.write(content.getBytes());
-            LOGGER.info("Successfully written to '%s".formatted(fileLocation));
+            LOGGER.info("Successfully written to '{}'", fileLocation);
         } catch (IOException e) {
-            LOGGER.warn("Could not write the content to the file '%s'. Reason: %s".formatted(fileLocation, e.getMessage()));
+            LOGGER.warn("Could not write the content to the file '{}'. Reason: {}", fileLocation, e.getMessage());
         }
     }
 
@@ -77,10 +79,10 @@ public class LocalFileStorageService implements StorageService<String> {
             if (file.getParentFile().mkdirs()) {
                 try {
                     if (file.createNewFile()) {
-                        LOGGER.info("File created at location '%s'".formatted(fileLocation));
+                        LOGGER.info("File created at location '{}'", fileLocation);
                     }
                 } catch (IOException e) {
-                    LOGGER.warn("Could not create file at location '%s'".formatted(fileLocation));
+                    LOGGER.warn("Could not create file at location '{}'", fileLocation);
                 }
             }
         }

@@ -1,21 +1,21 @@
 package nl.jiankai.refactoringplugin.git;
 
-import com.intellij.openapi.diagnostic.Logger;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.URIish;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URISyntaxException;
 
 public class GitUtil {
-    private static final Logger LOGGER = Logger.getInstance(GitUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     public static boolean validGitRepository(String url) {
         try {
             return new URIish(url).isRemote();
         } catch (URISyntaxException e) {
-            LOGGER.warn("Invalid url: %s".formatted(url));
+            LOGGER.warn("Invalid url: {}", url);
             return false;
         }
     }
@@ -27,7 +27,7 @@ public class GitUtil {
         try {
             return new JGitRepository(cloneCommand.call());
         } catch (GitAPIException e) {
-            LOGGER.warn("Could not clone the git repository: %s".formatted(e.getMessage()));
+            LOGGER.warn("Could not clone the git repository: {}", e.getMessage());
             throw new GitOperationException("Could not clone the git repository", e);
         }
     }

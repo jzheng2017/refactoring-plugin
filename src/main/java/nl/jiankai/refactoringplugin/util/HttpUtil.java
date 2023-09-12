@@ -1,6 +1,8 @@
 package nl.jiankai.refactoringplugin.util;
 
-import com.intellij.openapi.diagnostic.Logger;
+import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -8,7 +10,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 public class HttpUtil {
-    private static final Logger LOGGER = Logger.getInstance(HttpUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtil.class);
 
     public static boolean validUrl(String url) {
         if (url.isBlank()) {
@@ -19,7 +21,7 @@ public class HttpUtil {
             new URL(url).toURI();
             return true;
         } catch (MalformedURLException | URISyntaxException e) {
-            LOGGER.warn("Invalid url: %s".formatted(url));
+            LOGGER.warn("Invalid url: {}", url);
             return false;
         }
     }
