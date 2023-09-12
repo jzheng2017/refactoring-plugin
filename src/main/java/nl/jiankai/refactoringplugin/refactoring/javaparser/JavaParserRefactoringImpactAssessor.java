@@ -34,7 +34,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
     private GitRepositoryManager gitRepositoryManager;
     private PluginConfiguration pluginConfiguration;
     private ProjectDependencyResolver projectDependencyResolver;
-    private Set<RefactoringType> supportedRefactoringTypes = Set.of(RefactoringType.METHOD_PARAMETER_TYPE, RefactoringType.METHOD_NAME);
+    private Set<RefactoringType> supportedRefactoringTypes = Set.of(RefactoringType.METHOD_SIGNATURE, RefactoringType.METHOD_NAME);
 
     public JavaParserRefactoringImpactAssessor() {
         pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);

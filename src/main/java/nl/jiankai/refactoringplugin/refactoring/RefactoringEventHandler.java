@@ -79,7 +79,7 @@ public class RefactoringEventHandler implements RefactoringEventListener {
     private RefactoringType getRefactoringType(String refactoringId) {
         return switch (refactoringId) {
             case "refactoring.inplace.rename" -> RefactoringType.METHOD_NAME;
-            case "refactoring.changeSignature" -> RefactoringType.METHOD_PARAMETER_TYPE;
+            case "refactoring.changeSignature" -> RefactoringType.METHOD_SIGNATURE;
             default -> RefactoringType.UNKNOWN;
         };
     }

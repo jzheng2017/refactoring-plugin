@@ -4,10 +4,7 @@ import com.intellij.ide.DataManager;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -23,7 +20,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -52,7 +48,7 @@ public class RefactoringEventDialog extends DialogWrapper {
             }
         }
         list.setSize(800, 300);
-        new EditorTextField();
+
         EditorTextField editorTextField;
         try {
             com.intellij.openapi.project.Project project = DataManager.getInstance().getDataContextFromFocusAsync().blockingGet(1).getData(CommonDataKeys.PROJECT);
@@ -87,7 +83,8 @@ public class RefactoringEventDialog extends DialogWrapper {
     }
 
     private Position computeElementPosition(RefactoringImpact.Position position, Document document) {
-        return new Position(document.getLineStartOffset(Math.max(0, position.rowStart() - 1)), document.getLineEndOffset(Math.max(0, position.rowEnd())));
+        int start = document.getLineStartOffset(Math.max(0, position.rowStart() - 1));
+        return new Position(start + position.columnStart() - 1, start + position.columnEnd());
     }
 
     private record Position(int startOffset, int endOffset) {
