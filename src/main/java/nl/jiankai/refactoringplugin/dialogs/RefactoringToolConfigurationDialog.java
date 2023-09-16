@@ -2,25 +2,12 @@ package nl.jiankai.refactoringplugin.dialogs;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBList;
-import nl.jiankai.refactoringplugin.storage.EntityStorageService;
-import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
-import nl.jiankai.refactoringplugin.storage.RepositoryStorageService;
-import nl.jiankai.refactoringplugin.storage.StorageService;
-import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
-import nl.jiankai.refactoringplugin.tasks.TaskExecutorService;
-import nl.jiankai.refactoringplugin.util.HttpUtil;
+import nl.jiankai.refactoringplugin.storage.api.EntityStorageService;
+import nl.jiankai.refactoringplugin.storage.filestorage.repository.RepositoryDetails;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.time.Instant;
-import java.time.temporal.TemporalAmount;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class RefactoringToolConfigurationDialog extends DialogWrapper {
     private EntityStorageService<RepositoryDetails> storageService;

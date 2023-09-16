@@ -28,4 +28,9 @@ public interface ProjectDependencyResolver {
      * @param projectRootPath the location of the project
      */
     void install(File projectRootPath);
+
+    /**
+     * @return the project details containing group id, artifact id and the version
+     */
+    Project getProjectVersion(File projectRootPath);
 }

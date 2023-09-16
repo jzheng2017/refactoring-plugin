@@ -1,4 +1,4 @@
 package nl.jiankai.refactoringplugin.refactoring;
 
-public record Project(String name) {
+public record RefactoringStatistics() {
 }

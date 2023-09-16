@@ -15,8 +15,8 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
 import com.intellij.openapi.application.ApplicationManager;
-import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
 import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
+import nl.jiankai.refactoringplugin.dependencymanagement.Project;
 import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.git.GitRepositoryManager;
 import nl.jiankai.refactoringplugin.refactoring.*;
@@ -27,42 +27,50 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
 public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAssessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaParserRefactoringImpactAssessor.class);
     private GitRepositoryManager gitRepositoryManager;
-    private PluginConfiguration pluginConfiguration;
     private ProjectDependencyResolver projectDependencyResolver;
     private Set<RefactoringType> supportedRefactoringTypes = Set.of(RefactoringType.METHOD_SIGNATURE, RefactoringType.METHOD_NAME);
 
     public JavaParserRefactoringImpactAssessor() {
-        pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
-        projectDependencyResolver = ApplicationManager.getApplication().getService(MavenProjectDependencyResolver.class);
+        projectDependencyResolver = new MavenProjectDependencyResolver();
         gitRepositoryManager = ApplicationManager.getApplication().getService(GitRepositoryManager.class);
     }
 
     @Override
-    public ProjectImpactInfo assesImpact(RefactoringData refactoringData) {
+    public ImpactAssessment assesImpact(RefactoringData refactoringData) {
         if (!supportedRefactoringTypes.contains(refactoringData.refactoringType())) {
             throw new UnsupportedOperationException("Assessing impact for refactoring type '%s' is not supported yet".formatted(refactoringData.refactoringType()));
         }
 
         Map<Project, Collection<CompilationUnit>> projects = getAllProjects();
-
-        return new ProjectImpactInfo(projects
+        Map<Project, List<RefactoringImpact>> impacts = projects
                 .entrySet()
                 .stream()
-                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().stream().flatMap(cu -> collectRefactoringImpact(cu, refactoringData).stream()).toList())));
+                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().stream().flatMap(cu -> collectRefactoringImpact(cu, refactoringData)).toList()));
+
+        return new ImpactAssessment(impacts, RefactoringStatisticsGenerator.compute(impacts));
     }
 
-    private Collection<RefactoringImpact> collectRefactoringImpact(CompilationUnit compilationUnit, RefactoringData refactoringData) {
+    @Override
+    public List<RefactoringImpact> assesImpact(Project project, RefactoringData refactoringData) {
+        return getProject(project.pathToProject())
+                .stream()
+                .flatMap(compilationUnit -> collectRefactoringImpact(compilationUnit, refactoringData))
+                .toList();
+    }
+
+    private Stream<RefactoringImpact> collectRefactoringImpact(CompilationUnit compilationUnit, RefactoringData refactoringData) {
         return JavaParserUtil
                 .getMethodUsages(compilationUnit, refactoringData.fullyQualifiedSignature())
                 .stream()
                 .map(method -> {
-                    Range range = method.getRange().orElse(Range.range(0,0,0,0));
+                    Range range = method.getRange().orElse(Range.range(0, 0, 0, 0));
                     String filePath = "";
                     String fileName = "";
                     if (compilationUnit.getStorage().isPresent()) {
@@ -71,9 +79,11 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
                         fileName = storage.getFileName();
                     }
 
-                    return new RefactoringImpact(filePath, fileName, getPackageName(method), getClassName(method), method.getNameAsString(), new RefactoringImpact.Position(range.begin.column, range.end.column, range.begin.line, range.end.line), false);
-                })
-                .toList();
+                    return new RefactoringImpact(
+                            filePath, fileName, getPackageName(method), getClassName(method), method.getNameAsString(),
+                            new RefactoringImpact.Position(range.begin.column, range.end.column, range.begin.line, range.end.line),
+                            JavaParserUtil.isBreakingChange(method, refactoringData));
+                });
     }
 
     private String getPackageName(Node node) {
@@ -103,7 +113,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
                 .gitRepositories()
                 .entrySet()
                 .stream()
-                .collect(toMap(e -> new Project(e.getKey()), e -> getProject(e.getValue().getLocalPath())));
+                .collect(toMap(e -> projectDependencyResolver.getProjectVersion(new File(e.getValue().getLocalPath())), e -> getProject(e.getValue().getLocalPath())));
     }
 
     private Collection<CompilationUnit> getProject(String path) {

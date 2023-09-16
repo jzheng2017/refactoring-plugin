@@ -1,4 +1,4 @@
-package nl.jiankai.refactoringplugin.storage;
+package nl.jiankai.refactoringplugin.storage.api;
 
 public interface StorageObservable<T> {
 

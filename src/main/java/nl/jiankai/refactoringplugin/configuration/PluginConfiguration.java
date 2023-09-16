@@ -1,9 +1,6 @@
 package nl.jiankai.refactoringplugin.configuration;
 
-import com.intellij.openapi.components.Service;
-
-@Service
-public final class PluginConfiguration {
+public class PluginConfiguration {
     private final String pluginAssetsBaseDirectory = "/home/jiankai/Documents/ref-plugin";
 
     public String pluginAssetsBaseDirectory() {
@@ -16,5 +13,8 @@ public final class PluginConfiguration {
 
     public String pluginGitRepositoryDirectory() {
         return pluginAssetsBaseDirectory + "/repositories";
+    }
+    public String cacheDirectory() {
+        return pluginAssetsBaseDirectory + "/cache";
     }
 }

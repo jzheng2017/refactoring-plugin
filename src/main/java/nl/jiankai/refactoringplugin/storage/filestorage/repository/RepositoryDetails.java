@@ -1,6 +1,7 @@
-package nl.jiankai.refactoringplugin.storage;
+package nl.jiankai.refactoringplugin.storage.filestorage.repository;
 
-import java.io.File;
+import nl.jiankai.refactoringplugin.storage.api.Identifiable;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;

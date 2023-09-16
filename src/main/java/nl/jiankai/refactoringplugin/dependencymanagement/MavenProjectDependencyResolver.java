@@ -1,6 +1,5 @@
 package nl.jiankai.refactoringplugin.dependencymanagement;
 
-import com.intellij.openapi.components.Service;
 import nl.jiankai.refactoringplugin.refactoring.javaparser.Dependency;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -21,7 +20,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Service
 public final class MavenProjectDependencyResolver implements ProjectDependencyResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenProjectDependencyResolver.class);
     private static final String POM_FILE = "pom.xml";
@@ -29,9 +27,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
     @Override
     public Collection<Dependency> resolve(File projectRootPath) {
         try {
-            File file = findPomFile(projectRootPath);
-            MavenXpp3Reader reader = new MavenXpp3Reader();
-            Model model = reader.read(new FileReader(file));
+            Model model = parsePomFile(projectRootPath);
             Map<String, String> properties = model.getProperties();
             return model
                     .getDependencies()
@@ -81,6 +77,23 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
                 LOGGER.warn("Could not install dependencies for project on path '{}'", projectRootPath.getPath(), e);
             }
         }
+    }
+
+    @Override
+    public Project getProjectVersion(File projectRootPath) {
+        try {
+            Model pom = parsePomFile(projectRootPath);
+            return new Project(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), projectRootPath.getAbsolutePath());
+        } catch (IOException | XmlPullParserException e) {
+            LOGGER.warn("Could not get project version. Reason {}", e.getMessage(), e);
+            throw new ProjectResolveException(e.getMessage(), e);
+        }
+    }
+
+    private Model parsePomFile(File projectRootPath) throws IOException, XmlPullParserException {
+        File file = findPomFile(projectRootPath);
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        return reader.read(new FileReader(file));
     }
 
     private boolean dependenciesAlreadySatisfied(File projectRootPath) {

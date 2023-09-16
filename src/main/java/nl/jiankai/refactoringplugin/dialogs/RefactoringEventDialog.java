@@ -10,8 +10,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.JBList;
-import nl.jiankai.refactoringplugin.refactoring.Project;
-import nl.jiankai.refactoringplugin.refactoring.ProjectImpactInfo;
+import nl.jiankai.refactoringplugin.dependencymanagement.Project;
+import nl.jiankai.refactoringplugin.refactoring.ImpactAssessment;
 import nl.jiankai.refactoringplugin.refactoring.RefactoringImpact;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,9 +26,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class RefactoringEventDialog extends DialogWrapper {
-    private final ProjectImpactInfo impactInfo;
+    private final ImpactAssessment impactInfo;
 
-    public RefactoringEventDialog(ProjectImpactInfo impactInfo) {
+    public RefactoringEventDialog(ImpactAssessment impactInfo) {
         super(true);
         this.impactInfo = impactInfo;
         setTitle("Code Affected by Refactoring Action");

@@ -6,17 +6,17 @@ import com.intellij.openapi.application.ApplicationManager;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
 import nl.jiankai.refactoringplugin.dialogs.RefactoringToolConfigurationDialog;
 import nl.jiankai.refactoringplugin.git.GitRepositoryManager;
-import nl.jiankai.refactoringplugin.storage.EntityStorageService;
-import nl.jiankai.refactoringplugin.storage.FileRepositoryStorageService;
-import nl.jiankai.refactoringplugin.storage.LocalFileStorageService;
-import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
+import nl.jiankai.refactoringplugin.storage.api.EntityStorageService;
+import nl.jiankai.refactoringplugin.storage.filestorage.repository.FileRepositoryStorageService;
+import nl.jiankai.refactoringplugin.storage.filestorage.LocalFileStorageService;
+import nl.jiankai.refactoringplugin.storage.filestorage.repository.RepositoryDetails;
 import org.jetbrains.annotations.NotNull;
 
 public class ConfigureRefactoringToolAction extends AnAction {
     private PluginConfiguration pluginConfiguration;
 
     public ConfigureRefactoringToolAction() {
-        pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
+        pluginConfiguration = new PluginConfiguration();
     }
 
     @Override

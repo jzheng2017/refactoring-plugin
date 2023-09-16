@@ -1,6 +1,7 @@
-package nl.jiankai.refactoringplugin.storage;
+package nl.jiankai.refactoringplugin.storage.filestorage;
 
-import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
+import nl.jiankai.refactoringplugin.storage.api.StorageListener;
+import nl.jiankai.refactoringplugin.storage.api.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,11 +95,11 @@ public class LocalFileStorageService implements StorageService<String> {
 
     @Override
     public void addListener(StorageListener<String> listener) {
-
+        throw new UnsupportedOperationException("Can not listen to this class");
     }
 
     @Override
     public void removeListener(StorageListener<String> listener) {
-
+        throw new UnsupportedOperationException("Can not listen to this class");
     }
 }

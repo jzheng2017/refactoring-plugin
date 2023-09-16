@@ -28,6 +28,8 @@ dependencies {
   implementation("org.apache.maven:maven-model:4.0.0-alpha-7")
   implementation("org.apache.maven.shared:maven-invoker:3.2.0")
   implementation("commons-io:commons-io:2.13.0")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+
 }
 
 tasks {

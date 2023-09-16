@@ -5,12 +5,10 @@ import com.intellij.openapi.components.Service;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
 import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
-import nl.jiankai.refactoringplugin.storage.RepositoryDetails;
-import nl.jiankai.refactoringplugin.storage.StorageListener;
+import nl.jiankai.refactoringplugin.storage.filestorage.repository.RepositoryDetails;
+import nl.jiankai.refactoringplugin.storage.api.StorageListener;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTask;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.InvocationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +26,8 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
     private GitRepositoryDiscovery gitRepositoryDiscovery = new LocalFileGitRepositoryDiscovery();
     private ProjectDependencyResolver projectDependencyResolver;
     public GitRepositoryManager() {
-        pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
-        projectDependencyResolver = ApplicationManager.getApplication().getService(MavenProjectDependencyResolver.class);
+        pluginConfiguration = new PluginConfiguration();
+        projectDependencyResolver = new MavenProjectDependencyResolver();
 
         discoverGitRepositories();
         submitGitRepositoryDiscoveryTask();

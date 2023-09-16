@@ -30,7 +30,7 @@ public final class LocalFileGitRepositoryDiscovery implements GitRepositoryDisco
     private GitRepositoryFactory gitRepositoryFactory;
 
     public LocalFileGitRepositoryDiscovery() {
-        pluginConfiguration = ApplicationManager.getApplication().getService(PluginConfiguration.class);
+        pluginConfiguration = new PluginConfiguration();
         gitRepositoryFactory = new JGitRepositoryFactory();
     }
 

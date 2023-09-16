@@ -4,6 +4,8 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.intellij.openapi.diagnostic.Logger;
+import nl.jiankai.refactoringplugin.refactoring.RefactoringData;
+import nl.jiankai.refactoringplugin.refactoring.RefactoringType;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,9 +23,17 @@ public class JavaParserUtil {
         });
     }
 
-    public static List<VariableDeclarationExpr> getVariableDeclarations(CompilationUnit compilationUnit) {
-        return compilationUnit.findAll(VariableDeclarationExpr.class, decl -> {
-            return true;
-        });
+    public static boolean isBreakingChange(MethodCallExpr methodCallExpr, RefactoringData refactoringData) {
+        RefactoringType refactoringType = refactoringData.refactoringType();
+
+        return switch (refactoringType) {
+            case METHOD_NAME -> true;
+            case METHOD_SIGNATURE -> computeMethodSignatureIsBreaking(methodCallExpr);
+            default -> false;
+        };
+    }
+
+    private static boolean computeMethodSignatureIsBreaking(MethodCallExpr methodCallExpr) {
+        return false;
     }
 }

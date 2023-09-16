@@ -1,4 +1,4 @@
-package nl.jiankai.refactoringplugin.storage;
+package nl.jiankai.refactoringplugin.storage.api;
 
 /**
  * A class that implements this interface can be identified by a unique id
