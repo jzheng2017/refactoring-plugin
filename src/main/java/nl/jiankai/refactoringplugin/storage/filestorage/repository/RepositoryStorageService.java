@@ -98,6 +98,11 @@ public abstract class RepositoryStorageService<T> implements EntityStorageServic
         identifiers.forEach(this::remove);
     }
 
+    @Override
+    public void clear() {
+        storageService.clear();
+    }
+
     private void ensureValidGitRepo(String url) {
         if (!validGitRepository(url)) {
             throw new IllegalArgumentException("Invalid url '%s'".formatted(url));

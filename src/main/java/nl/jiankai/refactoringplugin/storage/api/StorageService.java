@@ -33,4 +33,9 @@ public interface StorageService<T> extends StorageObservable<T> {
      * @param list list of objects of type T
      */
     void append(List<T> list);
+
+    /**
+     * Empties the whole store by clearing all entries
+     */
+    void clear();
 }

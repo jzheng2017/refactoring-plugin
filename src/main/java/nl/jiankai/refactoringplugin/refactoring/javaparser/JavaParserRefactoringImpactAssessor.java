@@ -48,6 +48,8 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
             throw new UnsupportedOperationException("Assessing impact for refactoring type '%s' is not supported yet".formatted(refactoringData.refactoringType()));
         }
 
+        LOGGER.info("Computing refactoring impact for all registered projects");
+
         Map<Project, Collection<CompilationUnit>> projects = getAllProjects();
         Map<Project, List<RefactoringImpact>> impacts = projects
                 .entrySet()
@@ -59,6 +61,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
 
     @Override
     public List<RefactoringImpact> assesImpact(Project project, RefactoringData refactoringData) {
+        LOGGER.info("Computing refactoring impact for project {}", project);
         return getProject(project.pathToProject())
                 .stream()
                 .flatMap(compilationUnit -> collectRefactoringImpact(compilationUnit, refactoringData))

@@ -13,18 +13,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public final class GitRepositoryManager implements StorageListener<RepositoryDetails> {
+public final class GitRepositoryManager implements StorageListener<RepositoryDetails>, GitRepositoryObservable<GitRepository> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepositoryManager.class);
-    private Map<String, GitRepository> gitRepositories = new HashMap<>();
+    private final Map<String, GitRepository> gitRepositories = new HashMap<>();
     private PluginConfiguration pluginConfiguration;
     private ScheduledTaskExecutorService<Void> executorService = new ScheduledTaskExecutorService<>();
     private GitRepositoryDiscovery gitRepositoryDiscovery = new LocalFileGitRepositoryDiscovery();
     private ProjectDependencyResolver projectDependencyResolver;
+    private List<GitRepositoryListener<GitRepository>> listeners = new ArrayList<>();
     public GitRepositoryManager() {
         pluginConfiguration = new PluginConfiguration();
         projectDependencyResolver = new MavenProjectDependencyResolver();
@@ -50,18 +54,30 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
     private void discoverGitRepositories() {
         LOGGER.trace("Discovering git repositories...");
         try {
-            gitRepositoryDiscovery
-                    .discover()
-                    .parallel()
-                    .forEach(gitRepository -> {
-                        String gitRepositoryId = gitRepository.getId();
+            synchronized (gitRepositories) {
+                Map<String, GitRepository> existingGitRepositories = new HashMap<>(gitRepositories);
+                gitRepositoryDiscovery
+                        .discover()
+                        .parallel()
+                        .forEach(gitRepository -> {
+                            String gitRepositoryId = gitRepository.getId();
+                            existingGitRepositories.remove(gitRepositoryId);
 
-                        if (!gitRepositories.containsKey(gitRepositoryId)) {
-                            LOGGER.info("Discovered new git repository: '{}'", gitRepositoryId);
-                            gitRepositories.put(gitRepositoryId, gitRepository);
-                            downloadProjectDependencies(gitRepository);
-                        }
-                    });
+                            if (!gitRepositories.containsKey(gitRepositoryId)) {
+                                LOGGER.info("Discovered new git repository: '{}'", gitRepositoryId);
+                                gitRepositories.put(gitRepositoryId, gitRepository);
+                                notifyAdded(gitRepository);
+                                downloadProjectDependencies(gitRepository);
+                            }
+                        });
+
+                existingGitRepositories.values().forEach(gitRepository -> {
+                    String gitRepositoryId = gitRepository.getId();
+                    gitRepositories.remove(gitRepositoryId);
+                    LOGGER.info("Git repository '{}' has been removed as it's not available anymore", gitRepositoryId);
+                    notifyRemoved(gitRepository);
+                });
+            }
         } catch (Exception e) {
             LOGGER.warn("Something went wrong while discovering git repositories: {}", e.getMessage(), e);
         }
@@ -89,10 +105,35 @@ public final class GitRepositoryManager implements StorageListener<RepositoryDet
 
     @Override
     public void onRemoved(StorageEvent<RepositoryDetails> event) {
+        RepositoryDetails repositoryDetails = event.affected();
+        String repositoryId = repositoryDetails.getId();
 
+        if (gitRepositories.containsKey(repositoryId)) {
+            LOGGER.info("Repository '{}' will be removed", repositoryId);
+            gitRepositories.remove(repositoryId);
+        } else {
+            LOGGER.warn("Tried to remove repository '{}'. But it could not be found.", repositoryId);
+        }
     }
 
     public Map<String, GitRepository> gitRepositories() {
         return Map.copyOf(gitRepositories);
+    }
+
+    @Override
+    public void addListener(GitRepositoryListener<GitRepository> listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(GitRepositoryListener<GitRepository> listener) {
+        listeners.remove(listener);
+    }
+
+    public void notifyAdded(GitRepository gitRepository) {
+        listeners.forEach(listener -> listener.onAdded(new GitRepositoryListener.GitRepositoryEvent<>(gitRepository)));
+    }
+    public void notifyRemoved(GitRepository gitRepository) {
+        listeners.forEach(listener -> listener.onRemoved(new GitRepositoryListener.GitRepositoryEvent<>(gitRepository)));
     }
 }

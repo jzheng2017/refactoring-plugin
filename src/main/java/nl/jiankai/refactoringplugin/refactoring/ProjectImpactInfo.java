@@ -6,11 +6,16 @@ import nl.jiankai.refactoringplugin.storage.api.Identifiable;
 
 import java.util.List;
 
-public record ProjectImpactInfo(Project project, List<RefactoringImpact> refactoringImpacts) implements Identifiable {
+@JsonIgnoreProperties(value = {"id"})
+public record ProjectImpactInfo(Project project, RefactoringData refactoringData, List<RefactoringImpact> refactoringImpacts) implements Identifiable {
 
-    @JsonIgnoreProperties
     @Override
     public String getId() {
-        return project.toString();
+        return project.toString() + "-" + refactoringData.fullyQualifiedSignature() + "-" + refactoringData.refactoringType();
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }

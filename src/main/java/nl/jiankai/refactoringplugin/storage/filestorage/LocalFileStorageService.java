@@ -55,6 +55,11 @@ public class LocalFileStorageService implements StorageService<String> {
         writeList(list, true);
     }
 
+    @Override
+    public void clear() {
+        write("", false);
+    }
+
     private void writeList(List<String> list, boolean append) {
         write(String.join(SEPARATOR, list), append);
     }
