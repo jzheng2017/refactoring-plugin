@@ -9,11 +9,11 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class RepositoryDetails implements Identifiable {
+public class ProjectDetails implements Identifiable {
     private final String url;
     private String urlPath;
 
-    public RepositoryDetails(String url) {
+    public ProjectDetails(String url) {
         this.url = url;
         try {
             this.urlPath = Arrays
@@ -51,7 +51,7 @@ public class RepositoryDetails implements Identifiable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RepositoryDetails that = (RepositoryDetails) o;
+        ProjectDetails that = (ProjectDetails) o;
         return Objects.equals(getId(), that.getId());
     }
 

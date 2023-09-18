@@ -1,6 +1,5 @@
 package nl.jiankai.refactoringplugin.tasks;
 
-import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

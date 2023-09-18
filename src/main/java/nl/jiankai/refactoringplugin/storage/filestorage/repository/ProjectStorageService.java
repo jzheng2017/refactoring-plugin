@@ -11,86 +11,86 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static nl.jiankai.refactoringplugin.git.GitUtil.validGitRepository;
+import static nl.jiankai.refactoringplugin.project.git.GitUtil.validGitRepository;
 
 //TODO: prevent entities with duplicate IDs
-public abstract class RepositoryStorageService<T> implements EntityStorageService<RepositoryDetails>, Mappable<RepositoryDetails, T> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryStorageService.class);
+public abstract class ProjectStorageService<T> implements EntityStorageService<ProjectDetails>, Mappable<ProjectDetails, T> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectStorageService.class);
     private StorageService<T> storageService;
-    private List<StorageListener<RepositoryDetails>> listeners = new ArrayList<>();
+    private List<StorageListener<ProjectDetails>> listeners = new ArrayList<>();
 
-    protected RepositoryStorageService(StorageService<T> storageService) {
+    protected ProjectStorageService(StorageService<T> storageService) {
         this.storageService = storageService;
     }
 
-    public void addListener(StorageListener<RepositoryDetails> listener) {
+    public void addListener(StorageListener<ProjectDetails> listener) {
         this.listeners.add(listener);
     }
 
-    public void removeListener(StorageListener<RepositoryDetails> listener) {
+    public void removeListener(StorageListener<ProjectDetails> listener) {
         this.listeners.remove(listener);
     }
 
     @Override
-    public Stream<RepositoryDetails> read() {
+    public Stream<ProjectDetails> read() {
         return storageService.read().map(this::source);
     }
 
     @Override
-    public Optional<RepositoryDetails> read(String identifier) {
+    public Optional<ProjectDetails> read(String identifier) {
         return read()
-                .filter(repository -> Objects.equals(identifier, repository.getId()))
+                .filter(project -> Objects.equals(identifier, project.getId()))
                 .findFirst();
     }
 
     @Override
-    public void write(RepositoryDetails content) {
+    public void write(ProjectDetails content) {
         writeWithoutNotify(content);
         notifyUpdated(content);
     }
 
     @Override
-    public void write(List<RepositoryDetails> list) {
+    public void write(List<ProjectDetails> list) {
         writeWithoutNotify(list);
         list.forEach(this::notifyUpdated);
     }
 
     @Override
-    public void append(RepositoryDetails content) {
+    public void append(ProjectDetails content) {
         ensureValidGitRepo(content.url());
         storageService.append(target(content));
         notifyAdded(content);
     }
 
     @Override
-    public void append(List<RepositoryDetails> list) {
+    public void append(List<ProjectDetails> list) {
         ensureValidGitRepos(list);
         storageService.append(list.stream().map(this::target).toList());
         list.forEach(this::notifyAdded);
     }
 
     @Override
-    public void remove(Collection<RepositoryDetails> entities) {
-        Set<RepositoryDetails> entitiesSet = new HashSet<>(entities);
+    public void remove(Collection<ProjectDetails> entities) {
+        Set<ProjectDetails> entitiesSet = new HashSet<>(entities);
         writeWithoutNotify(read().filter(Predicate.not(entitiesSet::contains)).toList());
         entities.forEach(this::notifyRemoved);
     }
 
     @Override
-    public void remove(RepositoryDetails entity) {
+    public void remove(ProjectDetails entity) {
         ensureValidGitRepo(entity.url());
         read(entity.getId()).ifPresentOrElse(
-                repository -> {
-                    writeWithoutNotify(repository);
+                project -> {
+                    writeWithoutNotify(project);
                     notifyRemoved(entity);
                 },
-                () -> LOGGER.warn("Could not remove repository {} as it could not be found", entity)
+                () -> LOGGER.warn("Could not remove project {} as it could not be found", entity)
         );
     }
 
     @Override
     public void remove(String identifier) {
-        remove(new RepositoryDetails(identifier));
+        remove(new ProjectDetails(identifier));
     }
 
     @Override
@@ -109,28 +109,28 @@ public abstract class RepositoryStorageService<T> implements EntityStorageServic
         }
     }
 
-    private void ensureValidGitRepos(Collection<RepositoryDetails> list) {
+    private void ensureValidGitRepos(Collection<ProjectDetails> list) {
         list.forEach(repo -> ensureValidGitRepo(repo.url()));
     }
 
-    private void notifyAdded(RepositoryDetails repositoryDetails) {
-        listeners.forEach(listener -> listener.onAdded(new StorageListener.StorageEvent<>(repositoryDetails)));
+    private void notifyAdded(ProjectDetails projectDetails) {
+        listeners.forEach(listener -> listener.onAdded(new StorageListener.StorageEvent<>(projectDetails)));
     }
 
-    private void notifyUpdated(RepositoryDetails repositoryDetails) {
-        listeners.forEach(listener -> listener.onUpdated(new StorageListener.StorageEvent<>(repositoryDetails)));
+    private void notifyUpdated(ProjectDetails projectDetails) {
+        listeners.forEach(listener -> listener.onUpdated(new StorageListener.StorageEvent<>(projectDetails)));
     }
 
-    private void notifyRemoved(RepositoryDetails repositoryDetails) {
-        listeners.forEach(listener -> listener.onRemoved(new StorageListener.StorageEvent<>(repositoryDetails)));
+    private void notifyRemoved(ProjectDetails projectDetails) {
+        listeners.forEach(listener -> listener.onRemoved(new StorageListener.StorageEvent<>(projectDetails)));
     }
 
-    private void writeWithoutNotify(RepositoryDetails content) {
+    private void writeWithoutNotify(ProjectDetails content) {
         ensureValidGitRepo(content.url());
         storageService.write(target(content));
     }
 
-    private void writeWithoutNotify(List<RepositoryDetails> list) {
+    private void writeWithoutNotify(List<ProjectDetails> list) {
         ensureValidGitRepos(list);
         storageService.write(list.stream().map(this::target).toList());
     }

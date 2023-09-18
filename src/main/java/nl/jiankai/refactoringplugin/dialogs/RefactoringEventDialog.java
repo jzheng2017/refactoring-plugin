@@ -10,7 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.JBList;
-import nl.jiankai.refactoringplugin.dependencymanagement.Project;
+import nl.jiankai.refactoringplugin.project.dependencymanagement.Project;
 import nl.jiankai.refactoringplugin.refactoring.ImpactAssessment;
 import nl.jiankai.refactoringplugin.refactoring.RefactoringImpact;
 import org.jetbrains.annotations.Nullable;

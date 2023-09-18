@@ -1,6 +1,7 @@
-package nl.jiankai.refactoringplugin.git;
+package nl.jiankai.refactoringplugin.project.git;
 
 import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.URIish;
 import org.slf4j.Logger;
@@ -24,8 +25,8 @@ public class GitUtil {
         CloneCommand cloneCommand = new CloneCommand();
         cloneCommand.setURI(url);
         cloneCommand.setDirectory(repositoryDirectory);
-        try {
-            return new JGitRepository(cloneCommand.call());
+        try (Git git = cloneCommand.call()){
+            return new JGitRepositoryFactory().createProject(repositoryDirectory);
         } catch (GitAPIException e) {
             LOGGER.warn("Could not clone the git repository: {}", e.getMessage());
             throw new GitOperationException("Could not clone the git repository", e);

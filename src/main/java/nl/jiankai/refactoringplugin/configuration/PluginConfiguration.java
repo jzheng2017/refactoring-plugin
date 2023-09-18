@@ -7,12 +7,12 @@ public class PluginConfiguration {
         return pluginAssetsBaseDirectory;
     }
 
-    public String pluginRepositoryUrlsLocation() {
-        return pluginAssetsBaseDirectory + "/repositories.txt";
+    public String pluginProjectUrlsLocation() {
+        return pluginAssetsBaseDirectory + "/projects.txt";
     }
 
-    public String pluginGitRepositoryDirectory() {
-        return pluginAssetsBaseDirectory + "/repositories";
+    public String pluginProjectsLocation() {
+        return pluginAssetsBaseDirectory + "/projects";
     }
     public String cacheDirectory() {
         return pluginAssetsBaseDirectory + "/cache";

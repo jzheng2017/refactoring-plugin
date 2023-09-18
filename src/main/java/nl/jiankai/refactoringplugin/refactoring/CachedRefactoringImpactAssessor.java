@@ -2,52 +2,47 @@ package nl.jiankai.refactoringplugin.refactoring;
 
 import com.intellij.openapi.application.ApplicationManager;
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
-import nl.jiankai.refactoringplugin.dependencymanagement.Project;
-import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
-import nl.jiankai.refactoringplugin.git.GitRepository;
-import nl.jiankai.refactoringplugin.git.GitRepositoryListener;
-import nl.jiankai.refactoringplugin.git.GitRepositoryManager;
+import nl.jiankai.refactoringplugin.project.dependencymanagement.Project;
+import nl.jiankai.refactoringplugin.project.ProjectListener;
+import nl.jiankai.refactoringplugin.project.ProjectManager;
 import nl.jiankai.refactoringplugin.serialisation.JacksonSerializationService;
 import nl.jiankai.refactoringplugin.storage.filestorage.refactoringcache.RefactoringImpactStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class CachedRefactoringImpactAssessor implements RefactoringImpactAssessor, GitRepositoryListener<GitRepository> {
+public class CachedRefactoringImpactAssessor implements RefactoringImpactAssessor, ProjectListener<nl.jiankai.refactoringplugin.project.Project> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedRefactoringImpactAssessor.class);
     private Map<RefactoringKey, List<RefactoringImpact>> refactoringImpactCache = new HashMap<>();
     private RefactoringImpactAssessor refactoringImpactAssessor;
-    private GitRepositoryManager gitRepositoryManager;
+    private ProjectManager projectManager;
     private RefactoringImpactStorageService refactoringImpactStorageService;
-    private ProjectDependencyResolver dependencyResolver;
     private PluginConfiguration pluginConfiguration;
 
-    public CachedRefactoringImpactAssessor(RefactoringImpactAssessor refactoringImpactAssessor, ProjectDependencyResolver dependencyResolver) {
+    public CachedRefactoringImpactAssessor(RefactoringImpactAssessor refactoringImpactAssessor) {
         if (CachedRefactoringImpactAssessor.class.equals(refactoringImpactAssessor.getClass())) {
             throw new IllegalArgumentException("Can not inject '%s' into itself!".formatted(refactoringImpactAssessor.getClass()));
         }
 
-        this.gitRepositoryManager = ApplicationManager.getApplication().getService(GitRepositoryManager.class);
-        this.gitRepositoryManager.addListener(this);
+        this.projectManager = ApplicationManager.getApplication().getService(ProjectManager.class);
+        this.projectManager.addListener(this);
         this.refactoringImpactStorageService = new RefactoringImpactStorageService(new JacksonSerializationService());
-        this.dependencyResolver = dependencyResolver;
         this.refactoringImpactAssessor = refactoringImpactAssessor;
         this.pluginConfiguration = new PluginConfiguration();
     }
 
     @Override
     public ImpactAssessment assesImpact(RefactoringData refactoringData) {
-        Map<Project, List<RefactoringImpact>> impacts = gitRepositoryManager
-                .gitRepositories()
+        Map<Project, List<RefactoringImpact>> impacts = projectManager
+                .projects()
                 .values()
                 .stream()
-                .map(repository -> dependencyResolver.getProjectVersion(new File(repository.getLocalPath())))
+                .map(nl.jiankai.refactoringplugin.project.Project::getProjectVersion)
                 .map(project -> new ProjectImpactInfo(project, refactoringData, assesImpact(project, refactoringData)))
                 .collect(Collectors.toMap(ProjectImpactInfo::project, ProjectImpactInfo::refactoringImpacts));
 
@@ -107,12 +102,12 @@ public class CachedRefactoringImpactAssessor implements RefactoringImpactAssesso
     }
 
     @Override
-    public void onAdded(GitRepositoryEvent<GitRepository> event) {
+    public void onAdded(ProjectEvent<nl.jiankai.refactoringplugin.project.Project> event) {
         clearCache();
     }
 
     @Override
-    public void onRemoved(GitRepositoryEvent<GitRepository> event) {
+    public void onRemoved(ProjectEvent<nl.jiankai.refactoringplugin.project.Project> event) {
         clearCache();
     }
 

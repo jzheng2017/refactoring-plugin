@@ -1,7 +1,7 @@
 package nl.jiankai.refactoringplugin.refactoring;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import nl.jiankai.refactoringplugin.dependencymanagement.Project;
+import nl.jiankai.refactoringplugin.project.dependencymanagement.Project;
 import nl.jiankai.refactoringplugin.storage.api.Identifiable;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package nl.jiankai.refactoringplugin.git;
+package nl.jiankai.refactoringplugin.project.git;
 
 public class GitOperationException extends RuntimeException {
 

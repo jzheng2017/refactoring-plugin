@@ -3,16 +3,16 @@ package nl.jiankai.refactoringplugin.dialogs;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBList;
 import nl.jiankai.refactoringplugin.storage.api.EntityStorageService;
-import nl.jiankai.refactoringplugin.storage.filestorage.repository.RepositoryDetails;
+import nl.jiankai.refactoringplugin.storage.filestorage.repository.ProjectDetails;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class RefactoringToolConfigurationDialog extends DialogWrapper {
-    private EntityStorageService<RepositoryDetails> storageService;
+    private EntityStorageService<ProjectDetails> storageService;
 
-    public RefactoringToolConfigurationDialog(EntityStorageService<RepositoryDetails> storageService) {
+    public RefactoringToolConfigurationDialog(EntityStorageService<ProjectDetails> storageService) {
         super(true);
         this.storageService = storageService;
         setTitle("Configure Repositories");
@@ -44,14 +44,14 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
     }
 
     private void populateComponent(DefaultListModel<String> defaultListModel) {
-        defaultListModel.addAll(storageService.read().map(RepositoryDetails::toString).toList());
+        defaultListModel.addAll(storageService.read().map(ProjectDetails::toString).toList());
     }
 
     private void registerComponentActions(JButton addButton, JTextField repositoryInput, DefaultListModel<String> defaultListModel, JButton removeButton, JList<String> list) {
         addButton.addActionListener(actionEvent -> {
 
             if (!repositoryInput.getText().isBlank()) {
-                storageService.append(new RepositoryDetails(repositoryInput.getText()));
+                storageService.append(new ProjectDetails(repositoryInput.getText()));
                 defaultListModel.addElement(repositoryInput.getText());
                 repositoryInput.setText("");
             }
@@ -91,7 +91,7 @@ public class RefactoringToolConfigurationDialog extends DialogWrapper {
 
         removeButton.addActionListener(event -> {
             if (list.getSelectedIndex() >= 0 && !defaultListModel.isEmpty()) {
-                storageService.remove(new RepositoryDetails(list.getSelectedValue()));
+                storageService.remove(new ProjectDetails(list.getSelectedValue()));
                 defaultListModel.remove(list.getSelectedIndex());
             }
         });

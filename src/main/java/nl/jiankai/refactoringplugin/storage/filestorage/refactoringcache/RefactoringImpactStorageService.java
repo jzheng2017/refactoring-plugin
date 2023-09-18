@@ -1,12 +1,10 @@
 package nl.jiankai.refactoringplugin.storage.filestorage.refactoringcache;
 
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
-import nl.jiankai.refactoringplugin.dependencymanagement.Project;
 import nl.jiankai.refactoringplugin.refactoring.ProjectImpactInfo;
 import nl.jiankai.refactoringplugin.serialisation.SerializationService;
 import nl.jiankai.refactoringplugin.storage.api.EntityStorageService;
 import nl.jiankai.refactoringplugin.storage.api.StorageListener;
-import nl.jiankai.refactoringplugin.storage.api.StorageService;
 import nl.jiankai.refactoringplugin.storage.filestorage.LocalFileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

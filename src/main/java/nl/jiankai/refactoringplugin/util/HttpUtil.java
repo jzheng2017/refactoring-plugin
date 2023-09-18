@@ -1,11 +1,9 @@
 package nl.jiankai.refactoringplugin.util;
 
-import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 

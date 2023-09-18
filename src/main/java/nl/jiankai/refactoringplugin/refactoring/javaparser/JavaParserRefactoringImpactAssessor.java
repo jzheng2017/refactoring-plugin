@@ -15,17 +15,15 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
 import com.intellij.openapi.application.ApplicationManager;
-import nl.jiankai.refactoringplugin.dependencymanagement.MavenProjectDependencyResolver;
-import nl.jiankai.refactoringplugin.dependencymanagement.Project;
-import nl.jiankai.refactoringplugin.dependencymanagement.ProjectDependencyResolver;
-import nl.jiankai.refactoringplugin.git.GitRepositoryManager;
+import nl.jiankai.refactoringplugin.project.dependencymanagement.Project;
+import nl.jiankai.refactoringplugin.project.CompositeProjectFactory;
+import nl.jiankai.refactoringplugin.project.ProjectManager;
 import nl.jiankai.refactoringplugin.refactoring.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -33,13 +31,11 @@ import static java.util.stream.Collectors.toMap;
 
 public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAssessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaParserRefactoringImpactAssessor.class);
-    private GitRepositoryManager gitRepositoryManager;
-    private ProjectDependencyResolver projectDependencyResolver;
+    private ProjectManager projectManager;
     private Set<RefactoringType> supportedRefactoringTypes = Set.of(RefactoringType.METHOD_SIGNATURE, RefactoringType.METHOD_NAME);
 
     public JavaParserRefactoringImpactAssessor() {
-        projectDependencyResolver = new MavenProjectDependencyResolver();
-        gitRepositoryManager = ApplicationManager.getApplication().getService(GitRepositoryManager.class);
+        projectManager = ApplicationManager.getApplication().getService(ProjectManager.class);
     }
 
     @Override
@@ -112,16 +108,21 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
     }
 
     private Map<Project, Collection<CompilationUnit>> getAllProjects() {
-        return gitRepositoryManager
-                .gitRepositories()
-                .entrySet()
+        return projectManager
+                .projects()
+                .values()
                 .stream()
-                .collect(toMap(e -> projectDependencyResolver.getProjectVersion(new File(e.getValue().getLocalPath())), e -> getProject(e.getValue().getLocalPath())));
+                .collect(toMap(nl.jiankai.refactoringplugin.project.Project::getProjectVersion, project -> getProject(project)));
     }
 
-    private Collection<CompilationUnit> getProject(String path) {
-        Collection<File> jarLocations = projectDependencyResolver.jars(new File(path));
-        List<File> allSourceDirectories = collectAllSourceDirectories(new File(path));
+    private Collection<CompilationUnit> getProject(File pathToProject) {
+        return getProject(new CompositeProjectFactory().createProject(pathToProject));
+    }
+
+    private Collection<CompilationUnit> getProject(nl.jiankai.refactoringplugin.project.Project project) {
+        Collection<File> jarLocations = project.jars();
+        File projectPath = project.getLocalPath();
+        List<File> allSourceDirectories = collectAllSourceDirectories(projectPath);
         try {
             CombinedTypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
 
@@ -133,7 +134,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
                 typeSolver.add(new JarTypeSolver(jar.getAbsolutePath()));
             }
 
-            ProjectRoot projectRoot = new ParserCollectionStrategy(new ParserConfiguration().setSymbolResolver(new JavaSymbolSolver(typeSolver))).collect(Path.of(path));
+            ProjectRoot projectRoot = new ParserCollectionStrategy(new ParserConfiguration().setSymbolResolver(new JavaSymbolSolver(typeSolver))).collect(projectPath.toPath());
 
             return projectRoot
                     .getSourceRoots()
@@ -150,7 +151,7 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
                     .map(parseResult -> parseResult.getResult().get())
                     .toList();
         } catch (Exception ex) {
-            LOGGER.warn("Parsing project '{}' went wrong. Reason: {}", path, ex.getMessage(), ex);
+            LOGGER.warn("Parsing project '{}' went wrong. Reason: {}", projectPath, ex.getMessage(), ex);
         }
 
         return new ArrayList<>();

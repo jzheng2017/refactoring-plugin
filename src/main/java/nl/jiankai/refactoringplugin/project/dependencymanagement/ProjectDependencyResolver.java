@@ -1,4 +1,4 @@
-package nl.jiankai.refactoringplugin.dependencymanagement;
+package nl.jiankai.refactoringplugin.project.dependencymanagement;
 
 import nl.jiankai.refactoringplugin.refactoring.javaparser.Dependency;
 

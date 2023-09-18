@@ -1,6 +1,7 @@
-package nl.jiankai.refactoringplugin.dependencymanagement;
+package nl.jiankai.refactoringplugin.project.dependencymanagement;
 
 import nl.jiankai.refactoringplugin.refactoring.javaparser.Dependency;
+import nl.jiankai.refactoringplugin.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 
 public final class MavenProjectDependencyResolver implements ProjectDependencyResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenProjectDependencyResolver.class);
-    private static final String POM_FILE = "pom.xml";
 
     @Override
     public Collection<Dependency> resolve(File projectRootPath) {
@@ -34,7 +33,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
                     .stream()
                     .map(dependency -> new Dependency(dependency.getGroupId(), dependency.getArtifactId(), resolveProperty(properties, dependency.getVersion())))
                     .toList();
-        } catch (FileNotFoundException | IOException | XmlPullParserException e) {
+        } catch (FileUtil.FileNotFoundException | IOException | XmlPullParserException e) {
             LOGGER.warn("Could not resolve project dependencies for project path '{}'", projectRootPath, e);
             return new ArrayList<>();
         }
@@ -65,7 +64,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
         if (dependenciesAlreadySatisfied(projectRootPath)) {
             LOGGER.info("[{}]: Installing project dependencies is not necessary. All dependencies have already been satisfied.", projectRootPath);
         } else {
-            File file = findPomFile(projectRootPath);
+            File file = FileUtil.findPomFile(projectRootPath);
             InvocationRequest request = new DefaultInvocationRequest();
             request.setPomFile(file);
             request.setGoals(Collections.singletonList("compile"));
@@ -83,7 +82,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
     public Project getProjectVersion(File projectRootPath) {
         try {
             Model pom = parsePomFile(projectRootPath);
-            return new Project(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), projectRootPath.getAbsolutePath());
+            return new Project(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), projectRootPath);
         } catch (IOException | XmlPullParserException e) {
             LOGGER.warn("Could not get project version. Reason {}", e.getMessage(), e);
             throw new ProjectResolveException(e.getMessage(), e);
@@ -91,7 +90,7 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
     }
 
     private Model parsePomFile(File projectRootPath) throws IOException, XmlPullParserException {
-        File file = findPomFile(projectRootPath);
+        File file = FileUtil.findPomFile(projectRootPath);
         MavenXpp3Reader reader = new MavenXpp3Reader();
         return reader.read(new FileReader(file));
     }
@@ -125,20 +124,6 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
         return dependency.artifactId() + "-" + dependency.version() + ".jar";
     }
 
-    private File findPomFile(File projectRootPath) {
-        return findFileNonRecursive(projectRootPath, (dir, fileName) -> POM_FILE.equals(fileName));
-    }
-
-    private File findFileNonRecursive(File directory, FilenameFilter filter) {
-        File[] foundFiles = directory.listFiles(filter);
-
-        if (foundFiles != null && foundFiles.length > 0) {
-            return foundFiles[0];
-        }
-
-        throw new FileNotFoundException("Could not find file '%s'".formatted(directory.getName()));
-    }
-
     private String resolveProperty(Map<String, String> properties, String property) {
         if (property.startsWith("${") && property.endsWith("}")) {
             return properties.getOrDefault(property.substring(2, property.length() - 1), property);
@@ -163,11 +148,5 @@ public final class MavenProjectDependencyResolver implements ProjectDependencyRe
         }
 
         return new File(location);
-    }
-
-    private static class FileNotFoundException extends RuntimeException {
-        public FileNotFoundException(String errorMessage) {
-            super(errorMessage);
-        }
     }
 }
