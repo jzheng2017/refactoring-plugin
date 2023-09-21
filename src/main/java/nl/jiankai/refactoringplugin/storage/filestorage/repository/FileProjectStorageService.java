@@ -26,10 +26,4 @@ public class FileProjectStorageService extends ProjectStorageService<String> {
     public Project source(String target) {
         return new CompositeProjectFactory().createProject(new File(target));
     }
-
-    @Override
-    public boolean exists(String identifier) {
-        LOGGER.warn("Provided identifier '{}' is not needed and will be ignored", identifier);
-        return new File(pluginConfiguration.pluginProjectsToScanLocation()).exists();
-    }
 }

@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 
 import static nl.jiankai.refactoringplugin.project.git.GitUtil.validGitRepository;
 
-//TODO: prevent entities with duplicate IDs
 public abstract class ProjectStorageService<T> implements EntityStorageService<Project>, Mappable<Project,T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectStorageService.class);
     private static List<StorageListener<Project>> listeners = new ArrayList<>();
@@ -98,6 +97,11 @@ public abstract class ProjectStorageService<T> implements EntityStorageService<P
     @Override
     public void remove(List<String> identifiers) {
         identifiers.forEach(this::remove);
+    }
+
+    @Override
+    public boolean exists(String identifier) {
+        return read().anyMatch(project -> Objects.equals(identifier, project.getId()));
     }
 
     @Override
