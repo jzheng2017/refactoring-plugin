@@ -20,17 +20,15 @@ public class CachedRefactoringImpactAssessor implements RefactoringImpactAssesso
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedRefactoringImpactAssessor.class);
     private Map<RefactoringKey, List<RefactoringImpact>> refactoringImpactCache = new HashMap<>();
     private RefactoringImpactAssessor refactoringImpactAssessor;
-    private ProjectManager projectManager;
     private RefactoringImpactStorageService refactoringImpactStorageService;
     private PluginConfiguration pluginConfiguration;
+    private ProjectsToScan projectsToScan;
 
     public CachedRefactoringImpactAssessor(RefactoringImpactAssessor refactoringImpactAssessor) {
         if (CachedRefactoringImpactAssessor.class.equals(refactoringImpactAssessor.getClass())) {
             throw new IllegalArgumentException("Can not inject '%s' into itself!".formatted(refactoringImpactAssessor.getClass()));
         }
-
-        this.projectManager = ApplicationManager.getApplication().getService(ProjectManager.class);
-        this.projectManager.addListener(this);
+        this.projectsToScan = new ProjectsToScan();
         this.refactoringImpactStorageService = new RefactoringImpactStorageService(new JacksonSerializationService());
         this.refactoringImpactAssessor = refactoringImpactAssessor;
         this.pluginConfiguration = new PluginConfiguration();
@@ -38,9 +36,8 @@ public class CachedRefactoringImpactAssessor implements RefactoringImpactAssesso
 
     @Override
     public ImpactAssessment assesImpact(RefactoringData refactoringData) {
-        Map<Project, List<RefactoringImpact>> impacts = projectManager
+        Map<Project, List<RefactoringImpact>> impacts = projectsToScan
                 .projects()
-                .values()
                 .stream()
                 .map(nl.jiankai.refactoringplugin.project.Project::getProjectVersion)
                 .map(project -> new ProjectImpactInfo(project, refactoringData, assesImpact(project, refactoringData)))

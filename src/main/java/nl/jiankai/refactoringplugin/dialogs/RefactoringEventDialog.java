@@ -10,6 +10,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.JBList;
+import com.intellij.ui.components.JBScrollPane;
+import net.miginfocom.swing.MigLayout;
 import nl.jiankai.refactoringplugin.project.dependencymanagement.Project;
 import nl.jiankai.refactoringplugin.refactoring.ImpactAssessment;
 import nl.jiankai.refactoringplugin.refactoring.RefactoringImpact;
@@ -39,16 +41,26 @@ public class RefactoringEventDialog extends DialogWrapper {
     @Override
     protected @Nullable JComponent createCenterPanel() {
         JPanel dialogPanel = new JPanel();
+        setupPanel(dialogPanel);
 
+        //statistics
+        JTextArea topStatsArea = new JTextArea(impactInfo.refactoringStatistics().toString());
+        topStatsArea.setEditable(false);
+        dialogPanel.add(topStatsArea, "cell 6 4 41 8");
         DefaultListModel<RefactoringImpact> defaultListModel = new DefaultListModel<>();
         JList<RefactoringImpact> list = new JBList<>(defaultListModel);
+        JScrollPane impactScrollPane = new JBScrollPane(list);
+        JLabel impactLabel = new JLabel("All impacts due to refactoring action");
+        dialogPanel.add(impactLabel, "cell 6 15 41 1");
+        dialogPanel.add(impactScrollPane, "cell 6 17 41 17,grow");
+
         for (Map.Entry<Project, List<RefactoringImpact>> projectImpact : impactInfo.refactoringImpacts().entrySet()) {
             for (RefactoringImpact refactoringImpact : projectImpact.getValue()) {
                 defaultListModel.addElement(refactoringImpact);
             }
         }
-        list.setSize(800, 300);
 
+        //editor
         EditorTextField editorTextField;
         try {
             com.intellij.openapi.project.Project project = DataManager.getInstance().getDataContextFromFocusAsync().blockingGet(1).getData(CommonDataKeys.PROJECT);
@@ -56,15 +68,14 @@ public class RefactoringEventDialog extends DialogWrapper {
         } catch (TimeoutException | ExecutionException e) {
             throw new RuntimeException(e);
         }
-        editorTextField.setSize(1000, 700);
         editorTextField.setVisible(false);
         editorTextField.setOneLineMode(false);
         editorTextField.setViewer(true);
         editorTextField.setFileType(JavaFileType.INSTANCE);
-        dialogPanel.add(editorTextField);
-
-        dialogPanel.add(list, BorderLayout.PAGE_START);
-        EditorTextField finalEditorTextField = editorTextField;
+        dialogPanel.add(editorTextField, "cell 6 44 41 17,grow");
+        JLabel editorLabel = new JLabel("Source location of impact");
+        editorLabel.setVisible(false);
+        dialogPanel.add(editorLabel, "cell 6 43 10 1");
         list.addMouseListener(
                 new MouseAdapter() {
                     @Override
@@ -72,14 +83,145 @@ public class RefactoringEventDialog extends DialogWrapper {
                         RefactoringImpact refactoringImpact = list.getSelectedValue();
                         VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Path.of(refactoringImpact.filePath()));
                         Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
-                        finalEditorTextField.setDocument(document);
+                        editorTextField.setDocument(document);
                         Position elementPosition = computeElementPosition(refactoringImpact.position(), document);
-                        finalEditorTextField.getEditor().getSelectionModel().setSelection(elementPosition.startOffset, elementPosition.endOffset);
-                        finalEditorTextField.setVisible(true);
+                        editorTextField.getEditor().getSelectionModel().setSelection(elementPosition.startOffset, elementPosition.endOffset);
+                        editorTextField.setVisible(true);
+                        editorLabel.setVisible(true);
                     }
                 }
         );
         return dialogPanel;
+    }
+
+    private void setupPanel(JPanel dialogPanel) {
+        dialogPanel.setLayout(new MigLayout(
+                "hidemode 3",
+                // columns
+                "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]" +
+                        "[fill]",
+                // rows
+                "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]"));
     }
 
     private Position computeElementPosition(RefactoringImpact.Position position, Document document) {

@@ -31,11 +31,10 @@ import static java.util.stream.Collectors.toMap;
 
 public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAssessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaParserRefactoringImpactAssessor.class);
-    private ProjectManager projectManager;
     private Set<RefactoringType> supportedRefactoringTypes = Set.of(RefactoringType.METHOD_SIGNATURE, RefactoringType.METHOD_NAME);
-
+    private ProjectsToScan projectsToScan;
     public JavaParserRefactoringImpactAssessor() {
-        projectManager = ApplicationManager.getApplication().getService(ProjectManager.class);
+        projectsToScan = new ProjectsToScan();
     }
 
     @Override
@@ -108,9 +107,8 @@ public class JavaParserRefactoringImpactAssessor implements RefactoringImpactAss
     }
 
     private Map<Project, Collection<CompilationUnit>> getAllProjects() {
-        return projectManager
+        return projectsToScan
                 .projects()
-                .values()
                 .stream()
                 .collect(toMap(nl.jiankai.refactoringplugin.project.Project::getProjectVersion, project -> getProject(project)));
     }
