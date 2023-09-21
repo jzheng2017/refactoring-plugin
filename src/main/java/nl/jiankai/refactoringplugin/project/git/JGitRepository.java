@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.Git;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Objects;
 
 public class JGitRepository implements GitRepository {
     private final Git git;
@@ -21,7 +22,7 @@ public class JGitRepository implements GitRepository {
 
     @Override
     public String getId() {
-        return git.getRepository().getDirectory().getName();
+        return project.getId();
     }
 
     @Override
@@ -52,5 +53,23 @@ public class JGitRepository implements GitRepository {
     @Override
     public nl.jiankai.refactoringplugin.project.dependencymanagement.Project getProjectVersion() {
         return project.getProjectVersion();
+    }
+
+    @Override
+    public String toString() {
+        return project.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JGitRepository that = (JGitRepository) o;
+        return Objects.equals(project, that.project);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(project);
     }
 }

@@ -1,6 +1,8 @@
 package nl.jiankai.refactoringplugin.storage.filestorage.repository;
 
 import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.project.CompositeProjectFactory;
+import nl.jiankai.refactoringplugin.project.Project;
 import nl.jiankai.refactoringplugin.storage.filestorage.LocalFileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,18 +18,18 @@ public class FileProjectStorageService extends ProjectStorageService<String> {
     }
 
     @Override
-    public String target(ProjectDetails source) {
+    public String target(Project source) {
         return source.toString();
     }
 
     @Override
-    public ProjectDetails source(String target) {
-        return new ProjectDetails(target);
+    public Project source(String target) {
+        return new CompositeProjectFactory().createProject(new File(target));
     }
 
     @Override
     public boolean exists(String identifier) {
         LOGGER.warn("Provided identifier '{}' is not needed and will be ignored", identifier);
-        return new File(pluginConfiguration.pluginProjectUrlsLocation()).exists();
+        return new File(pluginConfiguration.pluginProjectsToScanLocation()).exists();
     }
 }

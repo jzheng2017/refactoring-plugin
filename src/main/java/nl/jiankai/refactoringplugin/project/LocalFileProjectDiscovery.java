@@ -30,10 +30,11 @@ public final class LocalFileProjectDiscovery implements ProjectDiscovery {
     @Override
     public Stream<Project> discover() {
         try {
+            createProjectDirectoryIfMissing();
             return executorService.executeTask(
                             ScheduledTask
                                     .builder((Class<Stream<Project>>)null)
-                                    .task(() -> this.scan(pluginConfiguration.pluginProjectsLocation()))
+                                    .task(() -> this.scan(pluginConfiguration.pluginAllProjectsLocation()))
                                     .build())
                     .get();
         } catch (InterruptedException | ExecutionException e) {
@@ -52,7 +53,21 @@ public final class LocalFileProjectDiscovery implements ProjectDiscovery {
     private List<File> getAllSubDirectories(String directory) {
         return Arrays
                 .stream(
-                        Objects.requireNonNull(new File(directory).listFiles(File::isDirectory))
+                        Objects.requireNonNull(new File(directory).listFiles(File::isDirectory), "The project directory '%s' does not exist..".formatted(directory))
                 ).toList();
+    }
+
+    private void createProjectDirectoryIfMissing() {
+        File projectDirectory = new File(pluginConfiguration.pluginAllProjectsLocation());
+
+        if (!projectDirectory.exists()) {
+            String projectPath = projectDirectory.getAbsolutePath();
+            LOGGER.warn("Project directory missing at {}", projectPath);
+            if (projectDirectory.mkdirs()) {
+                LOGGER.info("Project directory has been created at {}", projectPath);
+            } else {
+                LOGGER.warn("Could not create a directory for projects at {}", projectPath);
+            }
+        }
     }
 }

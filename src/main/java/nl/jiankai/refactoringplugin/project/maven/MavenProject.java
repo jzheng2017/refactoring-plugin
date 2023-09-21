@@ -6,6 +6,7 @@ import nl.jiankai.refactoringplugin.refactoring.javaparser.Dependency;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Objects;
 
 public class MavenProject implements Project {
     private final File projectRootPath;
@@ -42,6 +43,24 @@ public class MavenProject implements Project {
 
     @Override
     public String getId() {
-        return projectRootPath.getName();
+        return getLocalPath().getAbsolutePath();
+    }
+
+    @Override
+    public String toString() {
+        return getId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MavenProject that = (MavenProject) o;
+        return Objects.equals(projectRootPath, that.projectRootPath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(projectRootPath);
     }
 }

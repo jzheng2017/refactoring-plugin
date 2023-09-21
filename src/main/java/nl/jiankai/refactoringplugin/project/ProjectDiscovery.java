@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 public interface ProjectDiscovery {
 
     /**
-     * Discover all git repositories
-     * @return the list of all discovered git repositories
+     * Discover all projects within a space
+     * @return the list of all discovered projects
      */
     Stream<Project> discover();
 }

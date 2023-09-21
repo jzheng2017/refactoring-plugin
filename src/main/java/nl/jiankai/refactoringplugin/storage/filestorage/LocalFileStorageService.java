@@ -22,6 +22,7 @@ public class LocalFileStorageService implements StorageService<String> {
     public LocalFileStorageService(String fileLocation, boolean createIfMissing) {
         this.fileLocation = fileLocation;
         this.createIfMissing = createIfMissing;
+        createFileIfMissing();
     }
 
     @Override
@@ -82,15 +83,23 @@ public class LocalFileStorageService implements StorageService<String> {
     private void createFileIfMissing() {
         File file = new File(fileLocation);
         if (createIfMissing && !file.exists()) {
-            if (file.getParentFile().mkdirs()) {
-                try {
-                    if (file.createNewFile()) {
-                        LOGGER.info("File created at location '{}'", fileLocation);
-                    }
-                } catch (IOException e) {
-                    LOGGER.warn("Could not create file at location '{}'", fileLocation);
-                }
+            if (file.getParentFile().exists()) {
+                tryCreateFile(file);
+            } else if (file.getParentFile().mkdirs()) {
+                tryCreateFile(file);
+            } else {
+                LOGGER.warn("Could not successfully create the directory for the file at location {}", file);
             }
+        }
+    }
+
+    private void tryCreateFile(File file) {
+        try {
+            if (file.createNewFile()) {
+                LOGGER.info("File created at location '{}'", fileLocation);
+            }
+        } catch (IOException e) {
+            LOGGER.warn("Could not create file at location '{}'", fileLocation);
         }
     }
 
