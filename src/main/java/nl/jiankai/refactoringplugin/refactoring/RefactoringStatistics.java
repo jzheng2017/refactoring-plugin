@@ -36,8 +36,10 @@ public record RefactoringStatistics(Map<Project, Integer> projectsWithMostImpact
                     .append(projectEntry.getKey())
                     .append(": ")
                     .append(projectEntry.getValue())
-                    .append("\n=================================\n");
+                    .append("\n");
         }
+
+        view.append("\n=================================\n");
 
         view
                 .append("%s projects out of %s impacted".formatted(projectsImpacted, projectsWithMostImpact.size()))

@@ -1,10 +1,8 @@
 package nl.jiankai.refactoringplugin.refactoring;
 
-import com.intellij.openapi.application.ApplicationManager;
-import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.configuration.ApplicationConfiguration;
 import nl.jiankai.refactoringplugin.project.dependencymanagement.Project;
 import nl.jiankai.refactoringplugin.project.ProjectListener;
-import nl.jiankai.refactoringplugin.project.ProjectManager;
 import nl.jiankai.refactoringplugin.serialisation.JacksonSerializationService;
 import nl.jiankai.refactoringplugin.storage.filestorage.refactoringcache.RefactoringImpactStorageService;
 import org.slf4j.Logger;
@@ -21,7 +19,7 @@ public class CachedRefactoringImpactAssessor implements RefactoringImpactAssesso
     private Map<RefactoringKey, List<RefactoringImpact>> refactoringImpactCache = new HashMap<>();
     private RefactoringImpactAssessor refactoringImpactAssessor;
     private RefactoringImpactStorageService refactoringImpactStorageService;
-    private PluginConfiguration pluginConfiguration;
+    private ApplicationConfiguration applicationConfiguration;
     private ProjectsToScan projectsToScan;
 
     public CachedRefactoringImpactAssessor(RefactoringImpactAssessor refactoringImpactAssessor) {
@@ -31,7 +29,7 @@ public class CachedRefactoringImpactAssessor implements RefactoringImpactAssesso
         this.projectsToScan = new ProjectsToScan();
         this.refactoringImpactStorageService = new RefactoringImpactStorageService(new JacksonSerializationService());
         this.refactoringImpactAssessor = refactoringImpactAssessor;
-        this.pluginConfiguration = new PluginConfiguration();
+        this.applicationConfiguration = new ApplicationConfiguration();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package nl.jiankai.refactoringplugin.refactoring;
 
-import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.configuration.ApplicationConfiguration;
 import nl.jiankai.refactoringplugin.project.Project;
 import nl.jiankai.refactoringplugin.storage.api.StorageListener;
 import nl.jiankai.refactoringplugin.storage.filestorage.LocalFileStorageService;
@@ -20,8 +20,8 @@ public class ProjectsToScan implements StorageListener<Project> {
     private final ProjectStorageService<String> projectStorageService;
 
     public ProjectsToScan() {
-        PluginConfiguration pluginConfiguration = new PluginConfiguration();
-        projectStorageService = new FileProjectStorageService(new LocalFileStorageService(pluginConfiguration.pluginProjectsToScanLocation(), false));
+        ApplicationConfiguration applicationConfiguration = new ApplicationConfiguration();
+        projectStorageService = new FileProjectStorageService(new LocalFileStorageService(applicationConfiguration.applicationProjectsToScanLocation(), false));
         projectStorageService.addListener(this);
     }
 

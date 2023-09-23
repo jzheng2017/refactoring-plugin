@@ -1,7 +1,7 @@
 package nl.jiankai.refactoringplugin.project;
 
 import com.intellij.openapi.components.Service;
-import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.configuration.ApplicationConfiguration;
 import nl.jiankai.refactoringplugin.project.git.JGitRepositoryFactory;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTask;
 import nl.jiankai.refactoringplugin.tasks.ScheduledTaskExecutorService;
@@ -19,11 +19,11 @@ import java.util.stream.Stream;
 public final class LocalFileProjectDiscovery implements ProjectDiscovery {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileProjectDiscovery.class);
     private ScheduledTaskExecutorService<Stream<Project>> executorService = new ScheduledTaskExecutorService<>();
-    private PluginConfiguration pluginConfiguration;
+    private ApplicationConfiguration applicationConfiguration;
     private ProjectFactory projectFactory;
 
     public LocalFileProjectDiscovery() {
-        pluginConfiguration = new PluginConfiguration();
+        applicationConfiguration = new ApplicationConfiguration();
         projectFactory = new JGitRepositoryFactory();
     }
 
@@ -34,7 +34,7 @@ public final class LocalFileProjectDiscovery implements ProjectDiscovery {
             return executorService.executeTask(
                             ScheduledTask
                                     .builder((Class<Stream<Project>>)null)
-                                    .task(() -> this.scan(pluginConfiguration.pluginAllProjectsLocation()))
+                                    .task(() -> this.scan(applicationConfiguration.applicationAllProjectsLocation()))
                                     .build())
                     .get();
         } catch (InterruptedException | ExecutionException e) {
@@ -58,7 +58,7 @@ public final class LocalFileProjectDiscovery implements ProjectDiscovery {
     }
 
     private void createProjectDirectoryIfMissing() {
-        File projectDirectory = new File(pluginConfiguration.pluginAllProjectsLocation());
+        File projectDirectory = new File(applicationConfiguration.applicationAllProjectsLocation());
 
         if (!projectDirectory.exists()) {
             String projectPath = projectDirectory.getAbsolutePath();

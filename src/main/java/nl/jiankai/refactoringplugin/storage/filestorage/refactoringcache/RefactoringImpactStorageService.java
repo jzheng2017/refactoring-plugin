@@ -1,6 +1,6 @@
 package nl.jiankai.refactoringplugin.storage.filestorage.refactoringcache;
 
-import nl.jiankai.refactoringplugin.configuration.PluginConfiguration;
+import nl.jiankai.refactoringplugin.configuration.ApplicationConfiguration;
 import nl.jiankai.refactoringplugin.refactoring.ProjectImpactInfo;
 import nl.jiankai.refactoringplugin.serialisation.SerializationService;
 import nl.jiankai.refactoringplugin.storage.api.EntityStorageService;
@@ -16,11 +16,11 @@ import java.util.stream.Stream;
 
 public class RefactoringImpactStorageService implements EntityStorageService<ProjectImpactInfo> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RefactoringImpactStorageService.class);
-    private PluginConfiguration pluginConfiguration;
+    private ApplicationConfiguration applicationConfiguration;
     private SerializationService serializationService;
 
     public RefactoringImpactStorageService(SerializationService serializationService) {
-        this.pluginConfiguration = new PluginConfiguration();
+        this.applicationConfiguration = new ApplicationConfiguration();
         this.serializationService = serializationService;
     }
 
@@ -102,18 +102,18 @@ public class RefactoringImpactStorageService implements EntityStorageService<Pro
 
     @Override
     public void clear() {
-        if (new File(pluginConfiguration.cacheDirectory()).delete()) {
+        if (new File(applicationConfiguration.cacheDirectory()).delete()) {
             LOGGER.info("Successfully deleted refactoring result cache directory");
         } else {
-            LOGGER.warn("Could not delete refactoring result cache directory at location {}", pluginConfiguration.cacheDirectory());
+            LOGGER.warn("Could not delete refactoring result cache directory at location {}", applicationConfiguration.cacheDirectory());
         }
     }
 
     private String createFileLocation(String filename) {
-        return pluginConfiguration.cacheDirectory() + File.separator + filename.hashCode();
+        return applicationConfiguration.cacheDirectory() + File.separator + filename.hashCode();
     }
 
     private String createFileLocation(ProjectImpactInfo projectImpactInfo) {
-        return pluginConfiguration.cacheDirectory() + File.separator + projectImpactInfo.getId().hashCode();
+        return applicationConfiguration.cacheDirectory() + File.separator + projectImpactInfo.getId().hashCode();
     }
 }
